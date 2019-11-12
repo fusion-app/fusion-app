@@ -14,28 +14,29 @@ type ResourceSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	ResourceKind ResourceKind `json:"resource_kind"`
-	ProbeArgs []string `json:"probe_args"`
+	ProbeArgs    []string     `json:"probe_args"`
 }
 
 type ResourceKind string
 
 const (
-	ResourceKindHuman = "Human"
+	ResourceKindHuman   = "Human"
 	ResourceKindService = "Service"
-	ResourceKindEdge = "Edge"
+	ResourceKindEdge    = "Edge"
 )
 
 // ResourcePhase defines all phase of dataset lifecycle.
 type ResourcePhase string
 
 const (
-	// ResourcePhasePending means one or some of the containers, storages,
-	// or services are creating.
+	// ResourcePhaseNotready means some fields not set, should not create probe
+	ResourcePhaseNotready = "Notready"
+
+	// ResourcePhasePending means probe not ready
 	ResourcePhasePending = "Pending"
 
-	// ResourcePhaseRunning means dataset have been successfully scheduled and launched
-	// and it is running without error.
-	ResourcePhaseRunning = "Running"
+	// ResourcePhaseSynchronous means probe is ready
+	ResourcePhaseSynchronous = "Synchronous"
 
 	// ResourcePhaseFailed means some pods of dataset have failed.
 	ResourcePhaseFailed = "Failed"
@@ -47,9 +48,10 @@ type ResourceStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	Phase ResourcePhase `json:"phase"`
-	CreateTime *metav1.Time `json:"create_time,omitempty"`
-	StartTime *metav1.Time `json:"start_time,omitempty"`
+	Phase      ResourcePhase `json:"phase"`
+	Bound      bool          `json:"bound"`
+	CreateTime *metav1.Time  `json:"create_time,omitempty"`
+	StartTime  *metav1.Time  `json:"start_time,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
