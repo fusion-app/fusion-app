@@ -1,0 +1,7 @@
+apiVersion: fusion-app.io/v1alpha1
+kind: Resource
+metadata:
+  name: example-resource
+spec:
+  # Add fields here
+  size: 3

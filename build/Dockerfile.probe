@@ -1,0 +1,3 @@
+FROM golang:1.11
+
+ADD _output/ResourceProbeExample /usr/local/go/bin/ResourceProbeExample
