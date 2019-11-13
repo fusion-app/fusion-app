@@ -2,6 +2,7 @@ package resource
 
 import (
 	fusionappv1alpha1 "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
@@ -19,27 +20,35 @@ const (
 	EnvMqAdress            = "MQ_ADRESS"
 )
 
-// newPodForProbe returns a probe pod with the same name/namespace as the cr
-func newPodForProbe(resource *fusionappv1alpha1.Resource) *corev1.Pod {
+// newDeployForProbe returns a probe deployment with the same name/namespace as the cr
+func newDeployForProbe(resource *fusionappv1alpha1.Resource) *appsv1.Deployment {
 	mqAddress := os.Getenv(EnvMqAdress)
 	if len(mqAddress) == 0 {
 		mqAddress = defaultMqAddress
 	}
-	commands := []string{probeCommand, "--mq-address", mqAddress, "--mq-topic", topic, "--crd-namespace",
+	args := []string{"--mq-address", mqAddress, "--mq-topic", topic, "--crd-namespace",
 		resource.Namespace, "--crd-name", resource.Name, "--crd-kind", string(resource.Spec.ResourceKind)}
-	commands = append(commands, resource.Spec.ProbeArgs...)
-	return &corev1.Pod{
+	args = append(args, resource.Spec.ProbeArgs...)
+	return &appsv1.Deployment {
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      resource.Name + "-probe-pod",
+			Name:      resource.Name + "-probe-deploy",
 			Namespace: resource.Namespace,
 			Labels:    DefaultLabels(resource),
 		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:    resource.Name,
-					Image:   probeImage,
-					Command: commands,
+		Spec: appsv1.DeploymentSpec{
+			Selector: metav1.SetAsLabelSelector(DefaultLabels(resource)),
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels:    DefaultLabels(resource),
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:    resource.Name,
+							Image:   probeImage,
+							Args:    args,
+						},
+					},
 				},
 			},
 		},

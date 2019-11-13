@@ -6,6 +6,7 @@ import (
 	fusionappv1alpha1 "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
 	"github.com/fusion-app/fusion-app/pkg/syncer"
 	log "github.com/sirupsen/logrus"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,7 +40,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("resource-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New(controllerName, mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
@@ -52,6 +53,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	subResources := []runtime.Object{
 		&corev1.Pod{},
+		&appsv1.Deployment{},
 	}
 
 	// Watch for changes to secondary resource Pods and requeue the owner Resource
@@ -111,7 +113,7 @@ func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Resu
 	var syncers []syncer.Interface
 	log.Printf(fmt.Sprintf("phase:%s,bound:%v", string(instance.Status.Phase), instance.Status.Bound))
 	if instance.Spec.ProbeEnabled {
-		syncers = append(syncers, NewProbePodSyncer(instance, r.client, r.scheme))
+		syncers = append(syncers, NewProbeDeploySyncer(instance, r.client, r.scheme))
 	}
 	if err := r.sync(syncers); err != nil {
 		return reconcile.Result{}, err
