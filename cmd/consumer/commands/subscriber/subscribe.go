@@ -70,7 +70,7 @@ func subscribeTopic(topic string, broker string, group string) error {
 			} else if err != nil {
 				return err
 			}
-			original, err := json.Marshal(resource.Labels)
+			original, err := json.Marshal(resource.Spec.Labels)
 			patchJson, err := json.Marshal(msg.UpdatePatch)
 			patch, err := jsonpatch.DecodePatch(patchJson)
 			if err != nil {
@@ -82,7 +82,11 @@ func subscribeTopic(topic string, broker string, group string) error {
 			}
 			newLabels := map[string]string{}
 			err = json.Unmarshal(modified, &newLabels)
-			resource.SetLabels(newLabels)
+			in, out := &newLabels, &resource.Spec.Labels
+			*out = make(map[string]string, len(*in))
+			for key, val := range *in {
+				(*out)[key] = val
+			}
 			err = clientset.Update(context.TODO(), resource)
 			if err != nil {
 				return err

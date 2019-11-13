@@ -13,11 +13,12 @@ type ResourceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	Labels       map[string]string     `json:"labels"`
 	ResourceKind ResourceKind          `json:"resourceKind"`
 	Icon         string                `json:"icon,omitempty"`
 	Description  string                `json:"description,omitempty"`
 	AccessMode   ResourceAccessMode    `json:"accessMode"`
-	Operation    ResourceOperationSpec `json:"operation,omitempty"`
+	Operation    []ResourceOperationSpec `json:"operation,omitempty"`
 	ProbeArgs    []string              `json:"probeArgs"`
 	ProbeEnabled bool                  `json:"probeEnabled"`
 }
