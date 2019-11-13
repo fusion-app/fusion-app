@@ -1,25 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fusion-app-operator
+  name: fusion-app-consumer
   namespace: fusion-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: fusion-app
+      name: fusion-app-consumer
   template:
     metadata:
       labels:
-        name: fusion-app
+        name: fusion-app-consumer
     spec:
       serviceAccountName: fusion-app
       containers:
-        - name: fusion-app
+        - name: fusion-app-consumer
           # Replace this with the built image name
-          image: registry.njuics.cn/fusion-app/fusion-app:201911131435
+          image: registry.njuics.cn/fusion-app/consumer:201911131435
           command:
-          - /usr/local/bin/fusionapp-operator
+            - /usr/local/bin/fusionapp-consumer
+            - subscribe
+            - --topic
+            - resource-event-source
+            - --broker
+            - 114.212.87.225:32590
+            - --group
+            - event-source-group
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
@@ -32,7 +39,5 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "fusion-app"
-            - name: MQ_ADRESS
-              value: "114.212.87.225:32015"
             - name: BROKER
               value: "114.212.87.225:32590"

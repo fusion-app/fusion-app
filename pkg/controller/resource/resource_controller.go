@@ -2,9 +2,10 @@ package resource
 
 import (
 	"context"
-	"github.com/fusion-app/fusion-app/pkg/syncer"
-
+	"fmt"
 	fusionappv1alpha1 "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
+	"github.com/fusion-app/fusion-app/pkg/syncer"
+	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -14,11 +15,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-var log = logf.Log.WithName("controller_resource")
+const controllerName = "resource-controller"
 
 /**
 * USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
@@ -88,8 +88,7 @@ type ReconcileResource struct {
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	reqLogger.Info("Reconciling Resource")
+	log.Printf("Reconciling Resource")
 
 	// Fetch the Resource instance
 	instance := &fusionappv1alpha1.Resource{}
@@ -109,11 +108,10 @@ func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Resu
 	if instance.ObjectMeta.DeletionTimestamp != nil {
 		return reconcile.Result{}, nil
 	}
-	syncers := []syncer.Interface{
-		NewConsumerPodSyncer(instance, r.client, r.scheme),
-	}
-	if instance.Status.Phase != fusionappv1alpha1.ResourcePhaseNotReady && instance.Status.Phase != fusionappv1alpha1.ResourcePhaseFailed {
-		syncers = append(syncers, NewProbePodSyncer(instance, r.client, r.scheme),)
+	var syncers []syncer.Interface
+	log.Printf(fmt.Sprintf("phase:%s,bound:%v", string(instance.Status.Phase), instance.Status.Bound))
+	if instance.Spec.ProbeEnabled {
+		syncers = append(syncers, NewProbePodSyncer(instance, r.client, r.scheme))
 	}
 	if err := r.sync(syncers); err != nil {
 		return reconcile.Result{}, err

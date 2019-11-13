@@ -13,18 +13,19 @@ type ResourceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ResourceKind ResourceKind          `json:"resource_kind"`
+	ResourceKind ResourceKind          `json:"resourceKind"`
 	Icon         string                `json:"icon,omitempty"`
 	Description  string                `json:"description,omitempty"`
 	AccessMode   ResourceAccessMode    `json:"accessMode"`
 	Operation    ResourceOperationSpec `json:"operation,omitempty"`
-	ProbeArgs    []string              `json:"probe_args"`
+	ProbeArgs    []string              `json:"probeArgs"`
+	ProbeEnabled bool                  `json:"probeEnabled"`
 }
 
 type ResourceOperationSpec struct {
 	Name       string         `json:"name"`
 	Price      float64        `json:"price"`
-	HTTPAction HTTPActionSpec `json:"http_action,omitempty"`
+	HTTPAction HTTPActionSpec `json:"httpAction,omitempty"`
 }
 
 type HTTPActionSpec struct {
@@ -53,17 +54,31 @@ const (
 type ResourcePhase string
 
 const (
-	// ResourcePhaseNotReady means some fields not set, should not create probe
-	ResourcePhaseNotReady = "NotReady"
+	// ResourcePhasePending means Resource not ready
+	ResourcePhasePending   = "Pending"
 
-	// ResourcePhasePending means probe not ready
-	ResourcePhasePending = "Pending"
-
-	// ResourcePhaseSynchronous means probe is ready
-	ResourcePhaseSynchronous = "Synchronous"
+	// ResourcePhaseSynchronous means Resource is ready
+	ResourcePhaseRunning   = "Running"
 
 	// ResourcePhaseFailed means some pods of Resource have failed.
-	ResourcePhaseFailed = "Failed"
+	ResourcePhaseFailed    = "Failed"
+)
+
+// ResourcePhase defines all phase of dataset lifecycle.
+type ProbePhase string
+
+const (
+	// ProbePhaseNotReady means probe not ready
+	ProbePhaseNotReady       = "NotReady"
+
+	// ProbePhasePending means probe pod not started
+	ProbePhasePending        = "Pending"
+
+	// ProbePhaseSynchronous means probe is ready
+	ProbePhaseSynchronous    = "Synchronous"
+
+	// ProbePhaseFailed means the probe pod has failed.
+	ProbePhaseFailed         = "Failed"
 )
 
 // ResourceStatus defines the observed state of Resource
@@ -73,6 +88,7 @@ type ResourceStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	Phase      ResourcePhase `json:"phase"`
+	ProbePhase ProbePhase    `json:"probePhase,omitempty"`
 	Bound      bool          `json:"bound"`
 	CreateTime *metav1.Time  `json:"createTime,omitempty"`
 	StartTime  *metav1.Time  `json:"startTime,omitempty"`

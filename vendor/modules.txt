@@ -88,15 +88,6 @@ github.com/joho/godotenv
 github.com/json-iterator/go
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/kubeflow/pytorch-operator v0.4.0
-github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1
-# github.com/kubeflow/tf-operator v0.5.1
-github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1beta1
-github.com/kubeflow/tf-operator/pkg/apis/common/v1beta1
-# github.com/kubeless/kubeless v1.0.5
-github.com/kubeless/kubeless/pkg/client/clientset/versioned/scheme
-github.com/kubeless/kubeless/pkg/apis/kubeless/v1beta1
-github.com/kubeless/kubeless/pkg/apis/kubeless
 # github.com/mailru/easyjson v0.0.0-20190403194419-1ea4449da983
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
@@ -257,15 +248,15 @@ k8s.io/apimachinery/pkg/apis/meta/v1
 k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/runtime
 k8s.io/apimachinery/pkg/runtime/schema
-k8s.io/apimachinery/pkg/types
-k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/pkg/labels
+k8s.io/apimachinery/pkg/types
 k8s.io/apimachinery/pkg/api/resource
 k8s.io/apimachinery/pkg/conversion
 k8s.io/apimachinery/pkg/fields
 k8s.io/apimachinery/pkg/selection
 k8s.io/apimachinery/pkg/util/intstr
 k8s.io/apimachinery/pkg/util/runtime
+k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/pkg/util/net
 k8s.io/apimachinery/pkg/util/yaml
 k8s.io/apimachinery/pkg/api/meta
@@ -385,9 +376,9 @@ sigs.k8s.io/controller-runtime/pkg/runtime/scheme
 sigs.k8s.io/controller-runtime/pkg/controller
 sigs.k8s.io/controller-runtime/pkg/handler
 sigs.k8s.io/controller-runtime/pkg/reconcile
-sigs.k8s.io/controller-runtime/pkg/runtime/log
 sigs.k8s.io/controller-runtime/pkg/source
 sigs.k8s.io/controller-runtime/pkg/controller/controllerutil
+sigs.k8s.io/controller-runtime/pkg/runtime/log
 sigs.k8s.io/controller-runtime/pkg/cache
 sigs.k8s.io/controller-runtime/pkg/client/apiutil
 sigs.k8s.io/controller-runtime/pkg/internal/recorder

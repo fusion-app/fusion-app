@@ -8,8 +8,6 @@ import (
 
 	"github.com/fusion-app/fusion-app/pkg/apis"
 	"github.com/fusion-app/fusion-app/pkg/util/k8sutil"
-	pytorchv1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
-	tfv1beta1 "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1beta1"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -40,13 +38,13 @@ func NewAPIHandler(frontDir string) (*APIHandler, error) {
 	// setup client set
 	clientset, err := setupClient(kubeConfig)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to setup kubernetes client: %v", err)
+		return nil, fmt.Errorf("failed to setup kubernetes client: %v", err)
 	}
 
 	// setup kubernetes rest client
 	kubeClient, err := k8sutil.NewKubeClient()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to setup kubernetes client: %v", err)
+		return nil, fmt.Errorf("failed to setup kubernetes client: %v", err)
 	}
 
 	apiHandler := &APIHandler{
@@ -70,8 +68,6 @@ func setupClient(config *rest.Config) (client.Client, error) {
 	for _, addToSchemeFunc := range []func(s *runtime.Scheme) error{
 		apis.AddToScheme,
 		v1.AddToScheme,
-		tfv1beta1.AddToScheme,
-		pytorchv1beta1.AddToScheme,
 	} {
 		if err := addToSchemeFunc(scheme); err != nil {
 			return nil, err
