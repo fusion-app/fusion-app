@@ -88,7 +88,7 @@ type ResourceStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	Phase      ResourcePhase `json:"phase"`
-	ProbePhase ProbePhase    `json:"probePhase"`
+	ProbePhase ProbePhase    `json:"probePhase,omitempty"`
 	Bound      bool          `json:"bound"`
 	CreateTime *metav1.Time  `json:"createTime,omitempty"`
 	StartTime  *metav1.Time  `json:"startTime,omitempty"`
