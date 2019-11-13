@@ -6,7 +6,6 @@ import (
 	"fmt"
 	resourcev1alpha1 "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
 	resourcecontroller "github.com/fusion-app/fusion-app/pkg/controller/resource"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
@@ -15,39 +14,33 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (handler *APIHandler) ListResources(w http.ResponseWriter, r *http.Request) {
-	rsl := &resourcev1alpha1.ResourceList{}
-
-	err := handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
-	var resources []Resource
-	for _, resource := range rsl.Items {
-		resources = append(resources, *v1alpha1resourceToResource(&resource))
+func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.Request) {
+	resourceAPIQueryBody := new(ResourceAPIQueryBody)
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	if err != nil {
+		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 	}
+	defer r.Body.Close()
+
+	if err := json.Unmarshal(body, &resourceAPIQueryBody); err != nil {
+		if err := json.NewEncoder(w).Encode(err); err != nil {
+			responseJSON(Message{err.Error()}, w, http.StatusUnprocessableEntity)
+		}
+	}
+	rsl := &resourcev1alpha1.ResourceList{}
+	err = handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
 	if err != nil {
 		log.Warningf("failed to list resources: %v", err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
-	} else {
-		responseJSON(resources, w, http.StatusOK)
 	}
-}
-
-func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	kind := vars["kind"]
-	rsl := &resourcev1alpha1.ResourceList{}
-	err := handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
 	var resources []Resource
 	for _, resource := range rsl.Items {
-		if string(resource.Spec.ResourceKind) == kind {
+		if (len(resourceAPIQueryBody.Kind) == 0 || string(resource.Spec.ResourceKind) == resourceAPIQueryBody.Kind) &&
+			(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.Phase) == resourceAPIQueryBody.Phase) {
 			resources = append(resources, *v1alpha1resourceToResource(&resource))
 		}
 	}
-	if err != nil {
-		log.Warningf("failed to list resources: %v", err)
-		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
-	} else {
-		responseJSON(resources, w, http.StatusOK)
-	}
+	responseJSON(resources, w, http.StatusOK)
 }
 
 func (handler *APIHandler) CreateResource(w http.ResponseWriter, r *http.Request) {

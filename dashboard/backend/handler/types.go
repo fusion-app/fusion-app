@@ -43,3 +43,8 @@ type ResourceAPIPutBody struct {
 	AppRefResource    AppRefResource   `json:"appRefResource"`
 	ResourceSpec      ResourceSpec     `json:"resourceSpec"`
 }
+
+type ResourceAPIQueryBody struct {
+	Kind       string   `json:"kind,omitempty"`
+	Phase      string   `json:"phase,omitempty"`
+}
