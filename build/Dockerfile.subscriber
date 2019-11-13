@@ -6,6 +6,6 @@ COPY . /go/src/github.com/fusion-app/fusion-app
 
 RUN go build -o /consumer /go/src/github.com/fusion-app/fusion-app/cmd/consumer
 
-FROM alpine3.10
+FROM alpine:3.10
 
 COPY --from=0 /consumer /usr/local/bin/fusionapp-consumer

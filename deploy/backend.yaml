@@ -21,6 +21,10 @@ spec:
           command:
             - /usr/local/bin/fusionapp-dashboard
           imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
           env:
             - name: WATCH_NAMESPACE
               valueFrom:

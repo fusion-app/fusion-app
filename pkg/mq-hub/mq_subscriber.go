@@ -19,7 +19,9 @@ type KafkaSubscriber struct {
 
 // kafka config init
 // return error
-func (k *KafkaSubscriber) Init(config interface{}) error {
+func (k *KafkaSubscriber) Init(broker_list []string, group string) error {
+	k.broker_list = broker_list
+	k.group = group
 	// k.broker_list = config.broker_list
 	// k.topics = config.topics
 	// k.group = config.group
@@ -67,7 +69,7 @@ func (k *KafkaSubscriber) SubscribeTo(topic string) (<-chan interface{}, error) 
 			case msg, ok := <-consumer.Messages():
 				if ok {
 					valueChan <- string(msg.Value)
-					log.Printf("%s/%d/%d\t%s\t%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
+					//log.Printf("%s/%d/%d\t%s\t%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
 					consumer.MarkOffset(msg, "")
 				}
 			case <-signals:

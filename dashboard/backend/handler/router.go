@@ -23,8 +23,26 @@ func NewRouter(handler *APIHandler) http.Handler {
 		{
 			"ListResources",
 			"GET",
-			"/apis/resources",
+			"/apis/resource",
 			handler.ListResources,
+		},
+		{
+			"ListResourcesWithKind",
+			"GET",
+			"/apis/resource/{kind}",
+			handler.ListResourcesWithKind,
+		},
+		{
+			"CreateResource",
+			"POST",
+			"/apis/resource",
+			handler.CreateResource,
+		},
+		{
+			"UpdateResource",
+			"PUT",
+			"/apis/resource/{kind}/{resource}",
+			handler.UpdateResource,
 		},
 	}
 

@@ -1,6 +1,7 @@
 package internal
 
 const (
-	LabelNameKey      = "fusion-app.io/name"
+	LabelNameKey      = "fusionapp.io/name"
+	LabelKindKey      = "fusionapp.io/kind"
 )
 

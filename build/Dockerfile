@@ -7,7 +7,7 @@ COPY . /go/src/github.com/fusion-app/fusion-app
 RUN go build -o /operator /go/src/github.com/fusion-app/fusion-app/cmd/manager && \
     go build -o /backend /go/src/github.com/fusion-app/fusion-app/dashboard/backend
 
-FROM alpine3.10
+FROM alpine:3.10
 
 RUN apk update \
     && apk add --no-cache \
