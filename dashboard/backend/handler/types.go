@@ -40,7 +40,7 @@ type AppRefResource struct {
 }
 
 type ResourceAPIPutBody struct {
-	AppRefResource    AppRefResource   `json:"appRefResource"`
+	AppRefResource    AppRefResource   `json:"refResource"`
 	ResourceSpec      ResourceSpec     `json:"resourceSpec"`
 }
 

@@ -19,6 +19,7 @@ type ResourceSpec struct {
 	Description  string                `json:"description,omitempty"`
 	AccessMode   ResourceAccessMode    `json:"accessMode"`
 	Operation    []ResourceOperationSpec `json:"operation,omitempty"`
+	ProbeImage   string                `json:"probeImage,omitempty"`
 	ProbeArgs    []string              `json:"probeArgs"`
 	ProbeEnabled bool                  `json:"probeEnabled"`
 }

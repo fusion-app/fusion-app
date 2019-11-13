@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	probeImage             = "registry.njuics.cn/fusion-app/http-prober:201910122153"
+	defaultProbeImage      = "registry.njuics.cn/fusion-app/http-prober:201911131800"
 	probeCommand           = "/usr/local/bin/ResourceProbeExample"
 
 	topic                  = "resource-event-source"
@@ -22,6 +22,10 @@ const (
 
 // newDeployForProbe returns a probe deployment with the same name/namespace as the cr
 func newDeployForProbe(resource *fusionappv1alpha1.Resource) *appsv1.Deployment {
+	probeImage := defaultProbeImage
+	if len(resource.Spec.ProbeImage) > 0 {
+		probeImage = resource.Spec.ProbeImage
+	}
 	mqAddress := os.Getenv(EnvMqAdress)
 	if len(mqAddress) == 0 {
 		mqAddress = defaultMqAddress
