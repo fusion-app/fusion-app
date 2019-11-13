@@ -110,13 +110,15 @@ func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Resu
 		return reconcile.Result{}, nil
 	}
 	syncers := []syncer.Interface{
-		NewProbePodSyncer(instance, r.client, r.scheme),
 		NewConsumerPodSyncer(instance, r.client, r.scheme),
+	}
+	if instance.Status.Phase != fusionappv1alpha1.ResourcePhaseNotReady && instance.Status.Phase != fusionappv1alpha1.ResourcePhaseFailed {
+		syncers = append(syncers, NewProbePodSyncer(instance, r.client, r.scheme),)
 	}
 	if err := r.sync(syncers); err != nil {
 		return reconcile.Result{}, err
 	}
-	return reconcile.Result{}, nil
+	return reconcile.Result{}, r.updateStatus(instance)
 }
 
 func (r *ReconcileResource) sync(syncers []syncer.Interface) error {

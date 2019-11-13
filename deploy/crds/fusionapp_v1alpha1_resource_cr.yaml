@@ -1,7 +1,16 @@
-apiVersion: fusion-app.io/v1alpha1
+apiVersion: fusionapp.io/v1alpha1
 kind: Resource
 metadata:
   name: example-resource
+  namespace: fusion-app-resources
 spec:
   # Add fields here
-  size: 3
+  resourceKind: Service
+  accessMode: Exclusive
+  probeArgs:
+    - --crd-kind
+    - service
+    - --crd-name
+    - weather
+    - --http-url
+    - http://t.weather.sojson.com/api/weather/city/101030100

@@ -9,7 +9,7 @@ func TestKafkaSubscribe(t *testing.T) {
 	k := &KafkaSubscriber{}
 
 	k.broker_list = []string{"114.212.87.225:32590"}
-	k.group = "testworkflowEngine127.0.0.1"
+	k.group = "event-source"
 
 	valueChan, _ := k.SubscribeTo("event-source")
 

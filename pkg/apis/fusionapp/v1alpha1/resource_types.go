@@ -14,6 +14,9 @@ type ResourceSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	ResourceKind ResourceKind          `json:"resource_kind"`
+	Icon         string                `json:"icon,omitempty"`
+	Description  string                `json:"description,omitempty"`
+	AccessMode   ResourceAccessMode    `json:"accessMode"`
 	Operation    ResourceOperationSpec `json:"operation,omitempty"`
 	ProbeArgs    []string              `json:"probe_args"`
 }
@@ -39,12 +42,19 @@ const (
 	ResourceKindEdge    = "Edge"
 )
 
+type ResourceAccessMode string
+
+const (
+	ResourceAccessModeExclusive = "Exclusive"
+	ResourceAccessModeShared    = "Shared"
+)
+
 // ResourcePhase defines all phase of dataset lifecycle.
 type ResourcePhase string
 
 const (
-	// ResourcePhaseNotready means some fields not set, should not create probe
-	ResourcePhaseNotready = "Notready"
+	// ResourcePhaseNotReady means some fields not set, should not create probe
+	ResourcePhaseNotReady = "NotReady"
 
 	// ResourcePhasePending means probe not ready
 	ResourcePhasePending = "Pending"
@@ -52,7 +62,7 @@ const (
 	// ResourcePhaseSynchronous means probe is ready
 	ResourcePhaseSynchronous = "Synchronous"
 
-	// ResourcePhaseFailed means some pods of dataset have failed.
+	// ResourcePhaseFailed means some pods of Resource have failed.
 	ResourcePhaseFailed = "Failed"
 )
 
@@ -64,8 +74,8 @@ type ResourceStatus struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	Phase      ResourcePhase `json:"phase"`
 	Bound      bool          `json:"bound"`
-	CreateTime *metav1.Time  `json:"create_time,omitempty"`
-	StartTime  *metav1.Time  `json:"start_time,omitempty"`
+	CreateTime *metav1.Time  `json:"createTime,omitempty"`
+	StartTime  *metav1.Time  `json:"startTime,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

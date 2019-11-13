@@ -2,12 +2,14 @@ package subscriber
 
 import (
 	"encoding/json"
+	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/fusion-app/fusion-app/pkg/client"
 	"github.com/fusion-app/fusion-app/pkg/mq-hub"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
+	"strings"
 )
 
 func NewSubscribeCommand() *cobra.Command {
@@ -15,7 +17,7 @@ func NewSubscribeCommand() *cobra.Command {
 	var group string
 	var topic string
 	var command = &cobra.Command{
-		Use:      "subsribe FLAG",
+		Use:      "subscribe FLAG",
 		Short:    "subscribe a topic",
 		Long:     `subscribe a topic`,
 		Args:     cobra.MaximumNArgs(0),
@@ -33,8 +35,8 @@ func NewSubscribeCommand() *cobra.Command {
 }
 
 func subscribeTopic(topic string, broker string, group string) error {
-	kafkaSubscriber := &mqhub.KafkaSubscriber{[]string{broker}, group}
-
+	kafkaSubscriber := &mqhub.KafkaSubscriber{}
+	_ = kafkaSubscriber.Init(strings.Split(broker, ","), group)
 	valueChan, _ := kafkaSubscriber.SubscribeTo(topic)
 	resourceClient, err := client.NewResources("fusion-app-resources")
 	if err != nil {
@@ -48,9 +50,26 @@ func subscribeTopic(topic string, broker string, group string) error {
 			if err := json.Unmarshal(bytes, &msg); err != nil {
 				return err
 			}
-			_, err = resourceClient.Patch(msg.Target.Name, types.JSONPatchType, msg.UpdatePatch)
+			resource, err := resourceClient.Get(msg.Target.Name, v1.GetOptions{})
 			if err != nil {
-				return nil
+				return err
+			}
+			original, err := json.Marshal(resource.Labels)
+			patchJson, err := json.Marshal(msg.UpdatePatch)
+			patch, err := jsonpatch.DecodePatch(patchJson)
+			if err != nil {
+				return err
+			}
+			modified, err := patch.Apply(original)
+			if err != nil {
+				return err
+			}
+			newLabels := map[string]string{}
+			err = json.Unmarshal(modified, &newLabels)
+			resource.SetLabels(newLabels)
+			resource, err = resourceClient.Update(resource)
+			if err != nil {
+				return err
 			}
 		}
 	}

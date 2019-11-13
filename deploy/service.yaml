@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fusion-app-backend
+  namespace: fusion-app
+spec:
+  ports:
+    - name: http
+      nodePort: 32022
+      port: 8080
+      protocol: TCP
+      targetPort: http
+  selector:
+    name: fusion-app-backend
+  type: NodePort

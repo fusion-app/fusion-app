@@ -2,12 +2,12 @@ package client
 
 import (
 	"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
+	"github.com/fusion-app/fusion-app/pkg/util/k8sutil"
 	"github.com/kubeless/kubeless/pkg/client/clientset/versioned/scheme"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 type ResourceInterface interface {
@@ -28,7 +28,7 @@ type resources struct {
 }
 
 func NewResources(namespace string) (*resources, error) {
-	kubeConfig, err := config.GetConfig()
+	kubeConfig, err := k8sutil.GetClusterConfig()
 	if err != nil {
 		return nil, err
 	}

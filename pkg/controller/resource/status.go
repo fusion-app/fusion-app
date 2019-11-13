@@ -24,16 +24,18 @@ func (r *ReconcileResource) updateStatus(resource *v1alpha1.Resource) error {
 	}
 
 	podStatuses := internal.MappingPodsByPhase(pods)
-	if podStatuses[v1.PodRunning] == 2 {
+	if len(resource.Status.Phase) == 0 {
+		resource.Status.Phase = v1alpha1.ResourcePhaseNotReady
+	} else if podStatuses[v1.PodRunning] == 2 {
 		// All pods are running, set start time
 		if resource.Status.StartTime == nil {
 			now := metav1.Now()
 			resource.Status.StartTime = &now
 		}
-		resource.Status.Phase = v1alpha1.ResourcePhaseRunning
+		resource.Status.Phase = v1alpha1.ResourcePhaseSynchronous
 	} else if podStatuses[v1.PodFailed] > 0 {
 		resource.Status.Phase = v1alpha1.ResourcePhaseFailed
-	} else {
+	} else if resource.Status.Phase != v1alpha1.ResourcePhaseNotReady{
 		resource.Status.Phase = v1alpha1.ResourcePhasePending
 	}
 

@@ -4,6 +4,7 @@ require (
 	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/Shopify/sarama v1.19.0
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
+	github.com/evanphx/json-patch v4.1.0+incompatible
 	github.com/go-openapi/spec v0.19.0
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.6.2
@@ -17,7 +18,6 @@ require (
 	github.com/rs/cors v1.7.0
 	github.com/sirupsen/logrus v1.4.1
 	github.com/spf13/cobra v0.0.3
-	github.com/spf13/pflag v1.0.3
 	k8s.io/api v0.0.0-20190612125737-db0771252981
 	k8s.io/apiextensions-apiserver v0.0.0-20190228180357-d002e88f6236
 	k8s.io/apimachinery v0.0.0-20190612125636-6a5db36e93ad
