@@ -86,7 +86,7 @@ func (handler *APIHandler) UpdateResource(w http.ResponseWriter, r *http.Request
 	name := resourceAPIPutBody.AppRefResource.Name
 	namespace := resourceAPIPutBody.AppRefResource.Namespace
 	if len(namespace) == 0 {
-		resourceAPIPutBody.AppRefResource.Namespace = handler.resourcesNamespace
+		namespace = handler.resourcesNamespace
 	}
 	resource := new(resourcev1alpha1.Resource)
 	err = handler.client.Get(context.TODO(), client.ObjectKey{Namespace: namespace,
@@ -100,7 +100,7 @@ func (handler *APIHandler) UpdateResource(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if resource.Kind != resourceAPIPutBody.AppRefResource.Kind {
+	if string(resource.Spec.ResourceKind) != resourceAPIPutBody.AppRefResource.Kind {
 		err := fmt.Errorf("resource kind is not correct")
 		responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
 		return
