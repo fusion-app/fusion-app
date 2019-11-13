@@ -19,12 +19,15 @@ func (handler *APIHandler) ListResources(w http.ResponseWriter, r *http.Request)
 	rsl := &resourcev1alpha1.ResourceList{}
 
 	err := handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
-
+	var resources []Resource
+	for _, resource := range rsl.Items {
+		resources = append(resources, v1alpha1resourceToResource(&resource))
+	}
 	if err != nil {
 		log.Warningf("failed to list resources: %v", err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 	} else {
-		responseJSON(ResourceList{Resources: rsl.Items}, w, http.StatusOK)
+		responseJSON(ResourceList{Resources: resources}, w, http.StatusOK)
 	}
 }
 
@@ -32,21 +35,23 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 	vars := mux.Vars(r)
 	kind := vars["kind"]
 	rsl := &resourcev1alpha1.ResourceList{}
-	err := handler.client.List(context.TODO(),
-		&client.ListOptions{
-			LabelSelector: resourcecontroller.SelectorForKind(resourcev1alpha1.ResourceKind(kind)),
-		}, rsl)
-
+	err := handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
+	var resources []Resource
+	for _, resource := range rsl.Items {
+		if string(resource.Spec.ResourceKind) == kind {
+			resources = append(resources, v1alpha1resourceToResource(&resource))
+		}
+	}
 	if err != nil {
 		log.Warningf("failed to list resources: %v", err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 	} else {
-		responseJSON(ResourceList{Resources: rsl.Items}, w, http.StatusOK)
+		responseJSON(ResourceList{Resources: resources}, w, http.StatusOK)
 	}
 }
 
 func (handler *APIHandler) CreateResource(w http.ResponseWriter, r *http.Request) {
-	resource := new(resourcev1alpha1.Resource)
+	resource := new(Resource)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
@@ -60,9 +65,10 @@ func (handler *APIHandler) CreateResource(w http.ResponseWriter, r *http.Request
 	if len(resource.Namespace) == 0 {
 		resource.Namespace = handler.resourcesNamespace
 	}
-	resourcecontroller.AddKindLabel(resource)
+	rs := resourceToV1alpha1Resource(resource)
+	resourcecontroller.AddKindLabel(&rs)
 
-	err = handler.client.Create(context.TODO(), resource)
+	err = handler.client.Create(context.TODO(), &rs)
 	if err != nil {
 		log.Warningf("Failed to create resource %v: %v", resource.Name, err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
@@ -76,7 +82,7 @@ func (handler *APIHandler) UpdateResource(w http.ResponseWriter, r *http.Request
 	kind := vars["kind"]
 	name := vars["resource"]
 
-	resource := new(resourcev1alpha1.Resource)
+	resource := new(Resource)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
@@ -90,7 +96,7 @@ func (handler *APIHandler) UpdateResource(w http.ResponseWriter, r *http.Request
 	}
 
 	oldResource := new(resourcev1alpha1.Resource)
-	err = handler.client.Get(context.TODO(), client.ObjectKey{Namespace: handler.resourcesNamespace, Name: name}, oldResource)
+	err = handler.client.Get(context.TODO(), client.ObjectKey{Namespace: resource.Namespace, Name: name}, oldResource)
 	if errors.IsNotFound(err) {
 		err := fmt.Errorf("resource \"%s\" not exists", name)
 		responseJSON(Message{err.Error()}, w, http.StatusNotFound)
@@ -100,19 +106,19 @@ func (handler *APIHandler) UpdateResource(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if resource.ObjectMeta.Name != name {
+	if resource.Name != name {
 		err := fmt.Errorf("resource name in path is not the same as that in json")
 		responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
 		return
 	}
 
-	if string(resource.Spec.ResourceKind) != kind || string(oldResource.Spec.ResourceKind) != kind  {
+	if resource.Kind != kind || string(oldResource.Spec.ResourceKind) != kind  {
 		err := fmt.Errorf("resource kind in path is not the same as that in json")
 		responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
 		return
 	}
-
-	err = handler.client.Update(context.TODO(), resource)
+	rs := resourceToV1alpha1Resource(resource)
+	err = handler.client.Update(context.TODO(), &rs)
 	if err != nil {
 		log.Warningf("Failed to create workspace %v: %v", resource.Name, err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)

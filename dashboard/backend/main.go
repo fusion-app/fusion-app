@@ -34,7 +34,7 @@ func main() {
 	http.Handle("/", router)
 
 	p := ":" + strconv.Itoa(listenPort)
-	log.Infof("DLKit server listens on: %v", p)
+	log.Infof("fusion-app server listens on: %v", p)
 	if err = http.ListenAndServe(p, handlers.LoggingHandler(os.Stdout, http.DefaultServeMux)); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

@@ -20,13 +20,13 @@ func NewProbePodSyncer(resource *v1alpha1.Resource, c client.Client, scheme *run
 	})
 }
 
-func NewConsumerPodSyncer(resource *v1alpha1.Resource, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	pod := newPodForConsumer(resource)
-	return syncer.NewObjectSyncer("consumer-pod", resource, pod, c, scheme, func(existing runtime.Object) error {
-		out := existing.(*v1.Pod)
-		if !reflect.DeepEqual(out.Spec, pod.Spec) {
-			out.Spec = pod.Spec
-		}
-		return nil
-	})
-}
+//func NewConsumerPodSyncer(resource *v1alpha1.Resource, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+//	pod := newPodForConsumer(resource)
+//	return syncer.NewObjectSyncer("consumer-pod", resource, pod, c, scheme, func(existing runtime.Object) error {
+//		out := existing.(*v1.Pod)
+//		if !reflect.DeepEqual(out.Spec, pod.Spec) {
+//			out.Spec = pod.Spec
+//		}
+//		return nil
+//	})
+//}

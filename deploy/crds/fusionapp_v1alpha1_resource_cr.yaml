@@ -8,9 +8,5 @@ spec:
   resourceKind: Service
   accessMode: Exclusive
   probeArgs:
-    - --crd-kind
-    - service
-    - --crd-name
-    - weather
     - --http-url
     - http://t.weather.sojson.com/api/weather/city/101030100
