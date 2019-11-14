@@ -94,3 +94,26 @@ func updateResourceWithResourceSpec(resource *v1alpha1.Resource, spec *ResourceS
 		}
 	}
 }
+
+func v1alpha1AppInstanceToAppInstance(fusionAppInstance *v1alpha1.FusionAppInstance) *AppInstance {
+	appInstance := new(AppInstance)
+	appInstance.UID = string(fusionAppInstance.UID)
+	appInstance.Namespace = fusionAppInstance.Namespace
+	appInstance.Name = fusionAppInstance.Name
+	appInstance.RefApp.Name = fusionAppInstance.Spec.RefApp.Name
+	appInstance.RefApp.UID = fusionAppInstance.Spec.RefApp.UID
+	if fusionAppInstance.Spec.RefResource != nil {
+		appInstance.RefResource = make([]AppRefResource, len(fusionAppInstance.Spec.RefResource))
+		for i, refResource := range fusionAppInstance.Spec.RefResource {
+			appInstance.RefResource[i].UID = refResource.UID
+			appInstance.RefResource[i].Name = refResource.Name
+			appInstance.RefResource[i].Kind = refResource.Kind
+			appInstance.RefResource[i].Namespace = refResource.Namespace
+		}
+	}
+	appInstance.Status = string(fusionAppInstance.Status.Phase)
+	appInstance.StartTime = fusionAppInstance.Status.StartTime.String()
+	appInstance.UpdateTime = fusionAppInstance.Status.UpdateTime.String()
+	appInstance.EndTime = fusionAppInstance.Status.EndTime.String()
+	return appInstance
+}

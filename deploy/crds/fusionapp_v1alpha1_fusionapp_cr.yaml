@@ -1,0 +1,7 @@
+apiVersion: fusionapp.io/v1alpha1
+kind: FusionApp
+metadata:
+  name: example-fusionapp
+spec:
+  # Add fields here
+  size: 3

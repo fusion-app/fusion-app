@@ -17,7 +17,7 @@ spec:
       containers:
         - name: fusion-app
           # Replace this with the built image name
-          image: registry.njuics.cn/fusion-app/fusion-app:201911131930
+          image: registry.njuics.cn/fusion-app/fusion-app:201911141058
           command:
             - /usr/local/bin/fusionapp-dashboard
           imagePullPolicy: Always

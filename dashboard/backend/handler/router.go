@@ -38,6 +38,30 @@ func NewRouter(handler *APIHandler) http.Handler {
 			"/apis/resource",
 			handler.UpdateResource,
 		},
+		{
+			"BindResource",
+			"POST",
+			"/apis/resource/bind",
+			handler.BindResource,
+		},
+		{
+			"UnBindResource",
+			"DELETE",
+			"/apis/resource/bind",
+			handler.UnBindResource,
+		},
+		{
+			"QueryAppInstance",
+			"GET",
+			"/apis/app_instance",
+			handler.QueryAppInstance,
+		},
+		{
+			"CreateAppInstance",
+			"POST",
+			"/apis/app_instance",
+			handler.CreateAppInstance,
+		},
 	}
 
 	// The public route is always accessible

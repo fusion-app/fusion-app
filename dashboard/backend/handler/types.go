@@ -48,3 +48,32 @@ type ResourceAPIQueryBody struct {
 	Kind       string   `json:"kind,omitempty"`
 	Phase      string   `json:"phase,omitempty"`
 }
+
+type RefAppInstance struct {
+	UID	        string  `json:"uid"`
+	Namespace	string  `json:"namespace"`
+	Kind	    string  `json:"kind"`
+	Name	    string	`json:"name"`
+}
+
+type RefApp struct {
+	UID         string  `json:"uid"`
+	Name        string  `json:"name"`
+}
+
+type AppInstance struct {
+	UID	        string              `json:"uid"`
+	Namespace	string              `json:"namespace"`
+	Name	    string              `json:"name"`
+	RefApp      RefApp              `json:"refApp"`
+	RefResource	[]AppRefResource    `json:"refResource"`
+	Status	    string              `json:"status"`
+	StartTime	string              `json:"startTime"`
+	UpdateTime	string              `json:"updateTime"`
+	EndTime	    string              `json:"endTime"`
+}
+
+type AppInstanceAPICreateBody struct {
+	RefApp      RefApp             `json:"refApp"`
+	RefResource []AppRefResource   `json:"refResource"`
+}

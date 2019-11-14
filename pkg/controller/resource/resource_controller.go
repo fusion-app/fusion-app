@@ -2,7 +2,6 @@ package resource
 
 import (
 	"context"
-	"fmt"
 	fusionappv1alpha1 "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
 	"github.com/fusion-app/fusion-app/pkg/syncer"
 	log "github.com/sirupsen/logrus"
@@ -111,7 +110,6 @@ func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Resu
 		return reconcile.Result{}, nil
 	}
 	var syncers []syncer.Interface
-	log.Printf(fmt.Sprintf("phase:%s,bound:%v", string(instance.Status.Phase), instance.Status.Bound))
 	if instance.Spec.ProbeEnabled {
 		syncers = append(syncers, NewProbeDeploySyncer(instance, r.client, r.scheme))
 	}

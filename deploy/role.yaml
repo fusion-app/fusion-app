@@ -57,5 +57,7 @@ rules:
   - fusionapp.io
   resources:
   - '*'
+  - fusionapps
+  - fusionappinstances
   verbs:
   - '*'

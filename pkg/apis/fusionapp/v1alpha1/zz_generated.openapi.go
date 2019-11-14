@@ -11,9 +11,149 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.Resource":       schema_pkg_apis_fusionapp_v1alpha1_Resource(ref),
-		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.ResourceSpec":   schema_pkg_apis_fusionapp_v1alpha1_ResourceSpec(ref),
-		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.ResourceStatus": schema_pkg_apis_fusionapp_v1alpha1_ResourceStatus(ref),
+		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionApp":               schema_pkg_apis_fusionapp_v1alpha1_FusionApp(ref),
+		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppInstance":       schema_pkg_apis_fusionapp_v1alpha1_FusionAppInstance(ref),
+		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppInstanceSpec":   schema_pkg_apis_fusionapp_v1alpha1_FusionAppInstanceSpec(ref),
+		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppInstanceStatus": schema_pkg_apis_fusionapp_v1alpha1_FusionAppInstanceStatus(ref),
+		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppSpec":           schema_pkg_apis_fusionapp_v1alpha1_FusionAppSpec(ref),
+		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppStatus":         schema_pkg_apis_fusionapp_v1alpha1_FusionAppStatus(ref),
+		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.Resource":                schema_pkg_apis_fusionapp_v1alpha1_Resource(ref),
+		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.ResourceSpec":            schema_pkg_apis_fusionapp_v1alpha1_ResourceSpec(ref),
+		"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.ResourceStatus":          schema_pkg_apis_fusionapp_v1alpha1_ResourceStatus(ref),
+	}
+}
+
+func schema_pkg_apis_fusionapp_v1alpha1_FusionApp(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "FusionApp is the Schema for the fusionapps API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppSpec", "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_fusionapp_v1alpha1_FusionAppInstance(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "FusionAppInstance is the Schema for the fusionappinstances API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppInstanceSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppInstanceStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppInstanceSpec", "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.FusionAppInstanceStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_fusionapp_v1alpha1_FusionAppInstanceSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "FusionAppInstanceSpec defines the desired state of FusionAppInstance",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_fusionapp_v1alpha1_FusionAppInstanceStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "FusionAppInstanceStatus defines the observed state of FusionAppInstance",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_fusionapp_v1alpha1_FusionAppSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "FusionAppSpec defines the desired state of FusionApp",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_fusionapp_v1alpha1_FusionAppStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "FusionAppStatus defines the observed state of FusionApp",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
 	}
 }
 
@@ -65,10 +205,88 @@ func schema_pkg_apis_fusionapp_v1alpha1_ResourceSpec(ref common.ReferenceCallbac
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "ResourceSpec defines the desired state of Resource",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"labels": {
+						SchemaProps: spec.SchemaProps{
+							Description: "INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html",
+							Type:        []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"string"},
+										Format: "",
+									},
+								},
+							},
+						},
+					},
+					"resourceKind": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"icon": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"description": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"accessMode": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"operation": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.ResourceOperationSpec"),
+									},
+								},
+							},
+						},
+					},
+					"probeImage": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"probeArgs": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"string"},
+										Format: "",
+									},
+								},
+							},
+						},
+					},
+					"probeEnabled": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"labels", "resourceKind", "accessMode", "probeArgs", "probeEnabled"},
 			},
 		},
-		Dependencies: []string{},
+		Dependencies: []string{
+			"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.ResourceOperationSpec"},
 	}
 }
 
@@ -77,9 +295,41 @@ func schema_pkg_apis_fusionapp_v1alpha1_ResourceStatus(ref common.ReferenceCallb
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "ResourceStatus defines the observed state of Resource",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Description: "INSERT ADDITIONAL STATUS FIELD - define observed state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"probePhase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"bound": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+					"createTime": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
+					"startTime": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
+				},
+				Required: []string{"phase", "bound"},
 			},
 		},
-		Dependencies: []string{},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
 	}
 }
