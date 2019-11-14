@@ -62,15 +62,42 @@ func subscribeTopic(topic string, broker string, group string) error {
 			if err := json.Unmarshal(bytes, &msg); err != nil {
 				return err
 			}
-			resource := new(v1alpha1.Resource)
-			err := clientset.Get(context.TODO(), client.ObjectKey{Namespace: msg.Target.Namespace,
-				Name: msg.Target.Name}, resource)
-			if errors.IsNotFound(err) {
-				continue
-			} else if err != nil {
-				return err
+			var obj runtime.Object
+			var original []byte
+			if msg.Target.Kind ==  "Resource" {
+				resource := new(v1alpha1.Resource)
+				err := clientset.Get(context.TODO(), client.ObjectKey{Namespace: msg.Target.Namespace,
+					Name: msg.Target.Name}, resource)
+				if errors.IsNotFound(err) {
+					continue
+				} else if err != nil {
+					return err
+				}
+				original, err = json.Marshal(resource.Spec.Labels)
+				obj = resource
+			} else if msg.Target.Kind ==  "FusionApp" {
+				app := new(v1alpha1.FusionApp)
+				err := clientset.Get(context.TODO(), client.ObjectKey{Namespace: msg.Target.Namespace,
+					Name: msg.Target.Name}, app)
+				if errors.IsNotFound(err) {
+					continue
+				} else if err != nil {
+					return err
+				}
+				original, err = json.Marshal(app.Spec.Labels)
+				obj = app
+			} else if msg.Target.Kind ==  "FusionAppInstance" {
+				appInstance := new(v1alpha1.FusionAppInstance)
+				err := clientset.Get(context.TODO(), client.ObjectKey{Namespace: msg.Target.Namespace,
+					Name: msg.Target.Name}, appInstance)
+				if errors.IsNotFound(err) {
+					continue
+				} else if err != nil {
+					return err
+				}
+				original, err = json.Marshal(appInstance.Spec.Labels)
+				obj = appInstance
 			}
-			original, err := json.Marshal(resource.Spec.Labels)
 			patchJson, err := json.Marshal(msg.UpdatePatch)
 			patch, err := jsonpatch.DecodePatch(patchJson)
 			if err != nil {
@@ -82,14 +109,39 @@ func subscribeTopic(topic string, broker string, group string) error {
 			}
 			newLabels := map[string]string{}
 			err = json.Unmarshal(modified, &newLabels)
-			in, out := &newLabels, &resource.Spec.Labels
-			*out = make(map[string]string, len(*in))
-			for key, val := range *in {
-				(*out)[key] = val
-			}
-			err = clientset.Update(context.TODO(), resource)
-			if err != nil {
-				return err
+			if msg.Target.Kind ==  "Resource" {
+				resource := obj.(*v1alpha1.Resource)
+				in, out := &newLabels, &resource.Spec.Labels
+				*out = make(map[string]string, len(*in))
+				for key, val := range *in {
+					(*out)[key] = val
+				}
+				err = clientset.Update(context.TODO(), resource)
+				if err != nil {
+					return err
+				}
+			} else if msg.Target.Kind ==  "FusionApp" {
+				app := obj.(*v1alpha1.FusionApp)
+				in, out := &newLabels, &app.Spec.Labels
+				*out = make(map[string]string, len(*in))
+				for key, val := range *in {
+					(*out)[key] = val
+				}
+				err = clientset.Update(context.TODO(), app)
+				if err != nil {
+					return err
+				}
+			} else if msg.Target.Kind ==  "FusionAppInstance" {
+				appInstance := obj.(*v1alpha1.FusionAppInstance)
+				in, out := &newLabels, &appInstance.Spec.Labels
+				*out = make(map[string]string, len(*in))
+				for key, val := range *in {
+					(*out)[key] = val
+				}
+				err = clientset.Update(context.TODO(), appInstance)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}

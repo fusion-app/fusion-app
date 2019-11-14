@@ -3,9 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"os"
-
 	"github.com/fusion-app/fusion-app/pkg/apis"
 	"github.com/fusion-app/fusion-app/pkg/util/k8sutil"
 	"github.com/sirupsen/logrus"
@@ -13,6 +10,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"net/http"
+	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )

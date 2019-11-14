@@ -11,6 +11,8 @@ FROM alpine:3.10
 
 RUN apk update \
     && apk add --no-cache \
+        --repository https://mirrors.aliyun.com/alpine/v3.10/community \
+        --repository https://mirrors.aliyun.com/alpine/v3.10/main \
         ca-certificates \
         && update-ca-certificates 2>/dev/null || true
 

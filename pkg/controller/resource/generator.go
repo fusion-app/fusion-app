@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultProbeImage      = "registry.njuics.cn/fusion-app/http-prober:201911131800"
+	defaultProbeImage      = "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:201911131805"
 	probeCommand           = "/usr/local/bin/ResourceProbeExample"
 
 	topic                  = "resource-event-source"
@@ -31,7 +31,7 @@ func newDeployForProbe(resource *fusionappv1alpha1.Resource) *appsv1.Deployment 
 		mqAddress = defaultMqAddress
 	}
 	args := []string{"--mq-address", mqAddress, "--mq-topic", topic, "--crd-namespace",
-		resource.Namespace, "--crd-name", resource.Name, "--crd-kind", string(resource.Spec.ResourceKind)}
+		resource.Namespace, "--crd-name", resource.Name, "--crd-kind", resource.Kind}
 	args = append(args, resource.Spec.ProbeArgs...)
 	return &appsv1.Deployment {
 		ObjectMeta: metav1.ObjectMeta{

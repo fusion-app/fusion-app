@@ -14,8 +14,9 @@ type FusionAppSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	ResourceClaim   []ResourceClaimSpec   `json:"resourceClaim"`
-	Icon            string              `json:"icon"`
-	Description     string              `json:"description"`
+	Icon            string                `json:"icon"`
+	Description     string                `json:"description"`
+	Labels          map[string]string     `json:"labels"`
 }
 
 type ResourceClaimSpec struct {

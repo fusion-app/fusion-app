@@ -15,6 +15,7 @@ type FusionAppInstanceSpec struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	RefApp      RefApp            `json:"refApp,omitempty"`
 	RefResource []AppRefResource  `json:"refResource,omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
 }
 
 type RefApp struct {

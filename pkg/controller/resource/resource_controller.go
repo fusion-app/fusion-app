@@ -105,6 +105,7 @@ func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Resu
 		return reconcile.Result{}, err
 	}
 
+	log.Printf("Reconciling Resource %s", instance.Name)
 	// if the resource is terminating, stop reconcile
 	if instance.ObjectMeta.DeletionTimestamp != nil {
 		return reconcile.Result{}, nil

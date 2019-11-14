@@ -17,26 +17,32 @@ import (
 func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.Request) {
 	resourceAPIQueryBody := new(ResourceAPIQueryBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	defer r.Body.Close()
 	if err != nil {
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
 	}
-	defer r.Body.Close()
-
-	if err := json.Unmarshal(body, &resourceAPIQueryBody); err != nil {
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			responseJSON(Message{err.Error()}, w, http.StatusUnprocessableEntity)
+	if len(body) != 0 {
+		if err := json.Unmarshal(body, &resourceAPIQueryBody); err != nil {
+			if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
+				responseJSON(Message{nerr.Error()}, w, http.StatusUnprocessableEntity)
+			} else {
+				responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
+			}
+			return
 		}
 	}
 	rsl := &fusionappv1alpha1.ResourceList{}
 	err = handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
 	if err != nil {
-		log.Warningf("failed to list resources: %v", err)
+		log.Warningf("failed to list resources", err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
 	}
 	var resources []Resource
 	for _, resource := range rsl.Items {
 		if (len(resourceAPIQueryBody.Kind) == 0 || string(resource.Spec.ResourceKind) == resourceAPIQueryBody.Kind) &&
-			(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.Phase) == resourceAPIQueryBody.Phase) {
+			(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) {
 			resources = append(resources, *v1alpha1resourceToResource(&resource))
 		}
 	}
@@ -44,21 +50,26 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 }
 
 func (handler *APIHandler) CreateResource(w http.ResponseWriter, r *http.Request) {
-	resource := new(Resource)
+	resourceAPICreateBody := new(ResourceAPICreateBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	defer r.Body.Close()
 	if err != nil {
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
 	}
-	defer r.Body.Close()
-	if err := json.Unmarshal(body, &resource); err != nil {
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			responseJSON(Message{err.Error()}, w, http.StatusUnprocessableEntity)
+	if err := json.Unmarshal(body, &resourceAPICreateBody); err != nil {
+		if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
+			responseJSON(Message{nerr.Error()}, w, http.StatusUnprocessableEntity)
+		} else {
+			responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
 		}
+		return
 	}
+	resource := resourceAPICreateBody.ResourceSpec
 	if len(resource.Namespace) == 0 {
 		resource.Namespace = handler.resourcesNamespace
 	}
-	rs := resourceToV1alpha1Resource(resource)
+	rs := resourceToV1alpha1Resource(&resource)
 	resourcecontroller.AddKindLabel(rs)
 
 	err = handler.client.Create(context.TODO(), rs)
@@ -73,15 +84,19 @@ func (handler *APIHandler) CreateResource(w http.ResponseWriter, r *http.Request
 func (handler *APIHandler) UpdateResource(w http.ResponseWriter, r *http.Request) {
 	resourceAPIPutBody := new(ResourceAPIPutBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	defer r.Body.Close()
 	if err != nil {
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
 	}
-	defer r.Body.Close()
 
 	if err := json.Unmarshal(body, &resourceAPIPutBody); err != nil {
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			responseJSON(Message{err.Error()}, w, http.StatusUnprocessableEntity)
+		if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
+			responseJSON(Message{nerr.Error()}, w, http.StatusUnprocessableEntity)
+		} else {
+			responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
 		}
+		return
 	}
 	name := resourceAPIPutBody.AppRefResource.Name
 	namespace := resourceAPIPutBody.AppRefResource.Namespace
@@ -118,15 +133,19 @@ func (handler *APIHandler) UpdateResource(w http.ResponseWriter, r *http.Request
 func (handler *APIHandler) BindResource(w http.ResponseWriter, r *http.Request)  {
 	refResource := new(AppRefResource)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	defer r.Body.Close()
 	if err != nil {
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
 	}
-	defer r.Body.Close()
 
 	if err := json.Unmarshal(body, &refResource); err != nil {
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			responseJSON(Message{err.Error()}, w, http.StatusUnprocessableEntity)
+		if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
+			responseJSON(Message{nerr.Error()}, w, http.StatusUnprocessableEntity)
+		} else {
+			responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
 		}
+		return
 	}
 	name := refResource.Name
 	namespace := refResource.Namespace
@@ -156,15 +175,19 @@ func (handler *APIHandler) BindResource(w http.ResponseWriter, r *http.Request) 
 func (handler *APIHandler) UnBindResource(w http.ResponseWriter, r *http.Request)  {
 	refResource := new(AppRefResource)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	defer r.Body.Close()
 	if err != nil {
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
 	}
-	defer r.Body.Close()
 
 	if err := json.Unmarshal(body, &refResource); err != nil {
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			responseJSON(Message{err.Error()}, w, http.StatusUnprocessableEntity)
+		if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
+			responseJSON(Message{nerr.Error()}, w, http.StatusUnprocessableEntity)
+		} else {
+			responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
 		}
+		return
 	}
 	name := refResource.Name
 	namespace := refResource.Namespace

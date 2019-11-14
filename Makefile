@@ -1,5 +1,5 @@
-DOCKER_IMAGE=registry.njuics.cn/fusion-app/fusion-app:201911141058
-CONSUMER_IMAGE=registry.njuics.cn/fusion-app/consumer:201911141058
+DOCKER_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app:201911141700
+CONSUMER_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/consumer:201911141700
 
 image:
 	docker build -t $(DOCKER_IMAGE) -f build/Dockerfile .

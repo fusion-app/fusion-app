@@ -39,6 +39,10 @@ type AppRefResource struct {
 	Name	    string   `json:"name"`
 }
 
+type ResourceAPICreateBody struct {
+	ResourceSpec Resource `json:"resourceSpec"`
+}
+
 type ResourceAPIPutBody struct {
 	AppRefResource    AppRefResource   `json:"refResource"`
 	ResourceSpec      ResourceSpec     `json:"resourceSpec"`
@@ -50,9 +54,9 @@ type ResourceAPIQueryBody struct {
 }
 
 type RefAppInstance struct {
-	UID	        string  `json:"uid"`
-	Namespace	string  `json:"namespace"`
-	Kind	    string  `json:"kind"`
+	UID	        string  `json:"uid,omitempty"`
+	Namespace	string  `json:"namespace,omitempty"`
+	Kind	    string  `json:"kind,omitempty"`
 	Name	    string	`json:"name"`
 }
 
@@ -76,4 +80,19 @@ type AppInstance struct {
 type AppInstanceAPICreateBody struct {
 	RefApp      RefApp             `json:"refApp"`
 	RefResource []AppRefResource   `json:"refResource"`
+}
+
+type AppInstanceAPIQueryBody struct{
+	RefAppInstance RefAppInstance  `json:"refAppInstance"`
+}
+
+type AppInstanceAPIListBody struct {
+	Page       int                 `json:"page"`
+	Limit      int                 `json:"limit"`
+	SortBy     SortOption          `json:"sortBy"`
+}
+
+type SortOption struct {
+	Field      string              `json:"field"`
+	Order      bool                `json:"order"`
 }
