@@ -39,7 +39,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 		return
 	}
-	var resources []Resource
+	resources := make([]Resource, 0)
 	for _, resource := range rsl.Items {
 		if (len(resourceAPIQueryBody.Kind) == 0 || string(resource.Spec.ResourceKind) == resourceAPIQueryBody.Kind) &&
 			(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) {

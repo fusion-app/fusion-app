@@ -150,7 +150,7 @@ func (handler *APIHandler) ListAppInstance(w http.ResponseWriter, r *http.Reques
 	}
 	lowerBound := appInstanceAPIListBody.Limit*appInstanceAPIListBody.Page
 	upperBound := appInstanceAPIListBody.Limit*(appInstanceAPIListBody.Page+1)
-	var appInstances []AppInstance
+	appInstances := make([]AppInstance, 0)
 	for i := lowerBound; i < upperBound && i < len(ass); i ++ {
 		appInstances = append(appInstances, *v1alpha1AppInstanceToAppInstance(&ass[i]))
 	}

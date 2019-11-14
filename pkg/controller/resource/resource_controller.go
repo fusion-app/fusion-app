@@ -110,7 +110,7 @@ func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Resu
 	if instance.ObjectMeta.DeletionTimestamp != nil {
 		return reconcile.Result{}, nil
 	}
-	var syncers []syncer.Interface
+	syncers := []syncer.Interface{}
 	if instance.Spec.ProbeEnabled {
 		syncers = append(syncers, NewProbeDeploySyncer(instance, r.client, r.scheme))
 	}
