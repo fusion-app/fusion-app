@@ -112,8 +112,14 @@ func v1alpha1AppInstanceToAppInstance(fusionAppInstance *v1alpha1.FusionAppInsta
 		}
 	}
 	appInstance.Status = string(fusionAppInstance.Status.Phase)
-	appInstance.StartTime = fusionAppInstance.Status.StartTime.String()
-	appInstance.UpdateTime = fusionAppInstance.Status.UpdateTime.String()
-	appInstance.EndTime = fusionAppInstance.Status.EndTime.String()
+	if fusionAppInstance.Status.StartTime != nil {
+		appInstance.StartTime = fusionAppInstance.Status.StartTime.String()
+	}
+	if fusionAppInstance.Status.UpdateTime != nil {
+		appInstance.UpdateTime = fusionAppInstance.Status.UpdateTime.String()
+	}
+	if fusionAppInstance.Status.EndTime != nil {
+		appInstance.EndTime = fusionAppInstance.Status.EndTime.String()
+	}
 	return appInstance
 }

@@ -33,6 +33,4 @@ spec:
             - name: OPERATOR_NAME
               value: "fusion-app"
             - name: MQ_ADRESS
-              value: "114.212.87.225:32015"
-            - name: BROKER
-              value: "114.212.87.225:32590"
+              value: "221.228.66.83:30595"

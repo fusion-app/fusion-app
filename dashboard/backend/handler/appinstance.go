@@ -101,20 +101,26 @@ func (handler *APIHandler) ListAppInstance(w http.ResponseWriter, r *http.Reques
 	defer r.Body.Close()
 	if err != nil {
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
-	}
-	if err := json.Unmarshal(body, &appInstanceAPIListBody); err != nil {
-		if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
-			responseJSON(Message{nerr.Error()}, w, http.StatusUnprocessableEntity)
-		} else {
-			responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
-		}
 		return
+	}
+	if len(body) != 0 {
+		if err := json.Unmarshal(body, &appInstanceAPIListBody); err != nil {
+			if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
+				responseJSON(Message{nerr.Error()}, w, http.StatusUnprocessableEntity)
+			} else {
+				responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
+			}
+			return
+		}
+	} else {
+		appInstanceAPIListBody.Limit = 5
 	}
 	asl := new(fusionappv1alpha1.FusionAppInstanceList)
 	err = handler.client.List(context.TODO(), &client.ListOptions{}, asl)
 	if err != nil {
 		log.Warningf("failed to list appInstances", err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
 	}
 	ass := asl.Items
 	if appInstanceAPIListBody.SortBy.Field == "startTime" {

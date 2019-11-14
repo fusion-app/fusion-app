@@ -10,12 +10,10 @@ import (
 
 const (
 	defaultProbeImage      = "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:201911131805"
-	probeCommand           = "/usr/local/bin/ResourceProbeExample"
 
 	topic                  = "resource-event-source"
 
-	defaultMqAddress       = "114.212.87.225:32015"
-	defaultBroker          = "114.212.87.225:32590"
+	defaultMqAddress       = "221.228.66.83:30595"    // "114.212.87.225:32015"
 
 	EnvMqAdress            = "MQ_ADRESS"
 )

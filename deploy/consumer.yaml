@@ -24,7 +24,7 @@ spec:
             - --topic
             - resource-event-source
             - --broker
-            - 114.212.87.225:32590
+            - 221.228.66.83:30590
             - --group
             - event-source-group
           imagePullPolicy: Always
