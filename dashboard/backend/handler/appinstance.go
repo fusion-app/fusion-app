@@ -88,13 +88,19 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 	fusionAppInstance.Spec.RefApp.UID = string(app.UID)
 
 	rsl := &fusionappv1alpha1.ResourceList{}
-	err = handler.client.List(context.TODO(), client.MatchingField("status.bound", "false"), rsl)
+	err = handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
 	if err != nil {
 		log.Warningf("failed to list resources", err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 		return
 	}
-	if len(rsl.Items) == 0 {
+	resources := make([]fusionappv1alpha1.Resource, 0)
+	for _, item := range rsl.Items {
+		if !item.Status.Bound {
+			resources = append(resources, item)
+		}
+	}
+	if len(resources) == 0 {
 		responseJSON(Message{"No available resources"}, w, http.StatusInternalServerError)
 		return
 	}
@@ -107,7 +113,7 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 
 			labelSelector := client.MatchingLabels(mp).LabelSelector
 			var resource *fusionappv1alpha1.Resource
-			for _, item := range rsl.Items {
+			for _, item := range resources {
 				if labelSelector.Matches(labels.Set(mp)) {
 					resource = &item
 					break
