@@ -59,5 +59,6 @@ rules:
   - '*'
   - fusionapps
   - fusionappinstances
+  - resourceclaims
   verbs:
   - '*'

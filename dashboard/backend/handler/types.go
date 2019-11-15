@@ -21,6 +21,7 @@ type Resource struct {
 	Icon         string       `json:"icon,omitempty"`
 	Description  string       `json:"description,omitempty"`
 	ProbeArgs    []string     `json:"probeArgs"`
+	ProbeImage   string       `json:"probeImage"`
 }
 
 type ResourceSpec struct {
@@ -79,7 +80,7 @@ type AppInstance struct {
 
 type AppInstanceAPICreateBody struct {
 	RefApp      RefApp             `json:"refApp"`
-	RefResource []AppRefResource   `json:"refResource"`
+	//RefResource []AppRefResource   `json:"refResource"`
 }
 
 type AppInstanceAPIQueryBody struct{

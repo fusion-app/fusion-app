@@ -44,6 +44,7 @@ func resourceToV1alpha1Resource(resource *Resource) *v1alpha1.Resource {
 	rs.Spec.ResourceKind = v1alpha1.ResourceKind(resource.Kind)
 	rs.Status.Bound = resource.Bound
 	rs.Spec.AccessMode = v1alpha1.ResourceAccessMode(resource.AccessMode)
+	rs.Spec.ProbeImage = resource.ProbeImage
 	if resource.Labels != nil {
 		in, out := &resource.Labels, &rs.Spec.Labels
 		*out = make(map[string]string, len(*in))

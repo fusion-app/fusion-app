@@ -10,7 +10,6 @@ require (
 	github.com/gorilla/mux v1.6.2
 	github.com/iancoleman/strcase v0.0.0-20180726023541-3605ed457bf7
 	github.com/imdario/mergo v0.3.7
-	github.com/lxs137/fusion-app v0.0.0-20191108124951-c3fc93c5960a // indirect
 	github.com/operator-framework/operator-sdk v0.10.2-0.20191010224636-fd8747add695
 	github.com/rs/cors v1.7.0
 	github.com/sirupsen/logrus v1.4.1

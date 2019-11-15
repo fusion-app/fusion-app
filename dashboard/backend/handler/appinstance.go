@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sort"
@@ -73,17 +74,56 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 	fusionAppInstance.Namespace = handler.resourcesNamespace
 	fusionAppInstance.Name = appInstanceAPICreateBody.RefApp.Name + util.RandRunes(8)
 	fusionAppInstance.Spec.RefApp.Name = appInstanceAPICreateBody.RefApp.Name
-	fusionAppInstance.Spec.RefApp.UID = appInstanceAPICreateBody.RefApp.UID
-	if appInstanceAPICreateBody != nil {
-		fusionAppInstance.Spec.RefResource = make([]fusionappv1alpha1.AppRefResource, len(appInstanceAPICreateBody.RefResource))
-		for i, refResource := range appInstanceAPICreateBody.RefResource {
-			fusionAppInstance.Spec.RefResource[i].UID = refResource.UID
-			fusionAppInstance.Spec.RefResource[i].Namespace = refResource.Namespace
-			if len(refResource.Namespace) == 0 {
-				fusionAppInstance.Spec.RefResource[i].Namespace = handler.resourcesNamespace
+	app := new(fusionappv1alpha1.FusionApp)
+	err = handler.client.Get(context.TODO(), client.ObjectKey{Name: appInstanceAPICreateBody.RefApp.Name, Namespace:
+		handler.resourcesNamespace}, app)
+	if errors.IsNotFound(err) {
+		log.Warningf("failed to get fusionApp %v: %v", appInstanceAPICreateBody.RefApp.Name, err)
+		responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
+		return
+	} else if err != nil {
+		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
+	}
+	fusionAppInstance.Spec.RefApp.UID = string(app.UID)
+
+	rsl := &fusionappv1alpha1.ResourceList{}
+	err = handler.client.List(context.TODO(), client.MatchingField("status.bound", "false"), rsl)
+	if err != nil {
+		log.Warningf("failed to list resources", err)
+		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
+	}
+	if len(rsl.Items) == 0 {
+		responseJSON(Message{"No available resources"}, w, http.StatusInternalServerError)
+		return
+	}
+	if app.Spec.ResourceClaim != nil {
+		for _, resourceClaim := range app.Spec.ResourceClaim {
+			mp := make(map[string]string)
+			for _, selector := range resourceClaim.Selector {
+				mp[selector.Key] = selector.Value
 			}
-			fusionAppInstance.Spec.RefResource[i].Kind = refResource.Kind
-			fusionAppInstance.Spec.RefResource[i].Name = refResource.Name
+
+			labelSelector := client.MatchingLabels(mp).LabelSelector
+			var resource *fusionappv1alpha1.Resource
+			for _, item := range rsl.Items {
+				if labelSelector.Matches(labels.Set(mp)) {
+					resource = &item
+					break
+				}
+			}
+			if resource == nil {
+				responseJSON(Message{"No available resources"}, w, http.StatusInternalServerError)
+				return
+			} else {
+				fusionAppInstance.Spec.RefResource = append(fusionAppInstance.Spec.RefResource, fusionappv1alpha1.AppRefResource{
+					Kind: string(resource.Spec.ResourceKind),
+					Name: resource.Name,
+					Namespace: resource.Namespace,
+					UID: string(resource.UID),
+				})
+			}
 		}
 	}
 	err = handler.client.Create(context.TODO(), fusionAppInstance)

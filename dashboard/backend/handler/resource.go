@@ -33,7 +33,14 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 		}
 	}
 	rsl := &fusionappv1alpha1.ResourceList{}
-	err = handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
+	listOptions := &client.ListOptions{}
+	if len(resourceAPIQueryBody.Kind) != 0 {
+		listOptions = listOptions.MatchingField("spec.resourceKind", resourceAPIQueryBody.Kind)
+	}
+	if len(resourceAPIQueryBody.Phase) != 0 {
+		listOptions = listOptions.MatchingField("status.probePhase", resourceAPIQueryBody.Phase)
+	}
+	err = handler.client.List(context.TODO(), listOptions, rsl)
 	if err != nil {
 		log.Warningf("failed to list resources", err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
@@ -41,10 +48,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 	}
 	resources := make([]Resource, 0)
 	for _, resource := range rsl.Items {
-		if (len(resourceAPIQueryBody.Kind) == 0 || string(resource.Spec.ResourceKind) == resourceAPIQueryBody.Kind) &&
-			(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) {
-			resources = append(resources, *v1alpha1resourceToResource(&resource))
-		}
+		resources = append(resources, *v1alpha1resourceToResource(&resource))
 	}
 	responseJSON(resources, w, http.StatusOK)
 }
