@@ -36,8 +36,8 @@ type ResourceSpec struct {
 type AppRefResource struct {
 	UID	        string   `json:"uid,omitempty"`
 	Namespace	string   `json:"namespace,omitempty"`
-	Kind	    string   `json:"kind"`
-	Name	    string   `json:"name"`
+	Kind	    string   `json:"kind,omitempty"`
+	Name	    string   `json:"name,omitempty"`
 }
 
 type ResourceAPICreateBody struct {
@@ -52,6 +52,8 @@ type ResourceAPIPutBody struct {
 type ResourceAPIQueryBody struct {
 	Kind       string   `json:"kind,omitempty"`
 	Phase      string   `json:"phase,omitempty"`
+	RefResource AppRefResource `json:"refResource,omitempty"`
+	LabelSelector []fusionappv1alpha1.SelectorSpec `json:"labelSelector,omitempty"`
 }
 
 type RefAppInstance struct {

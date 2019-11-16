@@ -106,15 +106,14 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 	}
 	if app.Spec.ResourceClaim != nil {
 		for _, resourceClaim := range app.Spec.ResourceClaim {
-			mp := make(map[string]string)
+			mp := make(labels.Set)
 			for _, selector := range resourceClaim.Selector {
 				mp[selector.Key] = selector.Value
 			}
-
-			labelSelector := client.MatchingLabels(mp).LabelSelector
+			labelSelector := labels.SelectorFromSet(mp)
 			var resource *fusionappv1alpha1.Resource
 			for _, item := range resources {
-				if labelSelector.Matches(labels.Set(mp)) {
+				if labelSelector.Matches(labels.Set(item.Spec.Labels)) {
 					resource = &item
 					break
 				}

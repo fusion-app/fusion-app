@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -32,21 +33,55 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 			return
 		}
 	}
-	rsl := &fusionappv1alpha1.ResourceList{}
-	err = handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
-	if err != nil {
-		log.Warningf("failed to list resources", err)
-		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
-		return
-	}
-	resources := make([]Resource, 0)
-	for _, resource := range rsl.Items {
-		if (len(resourceAPIQueryBody.Kind) == 0 || string(resource.Spec.ResourceKind) == resourceAPIQueryBody.Kind) &&
-			(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) {
-			resources = append(resources, *v1alpha1resourceToResource(&resource))
+	if len(resourceAPIQueryBody.RefResource.Name) > 0  {
+		resource := &fusionappv1alpha1.Resource{}
+		name := resourceAPIQueryBody.RefResource.Name
+		namespace := resourceAPIQueryBody.RefResource.Namespace
+		if len(namespace) == 0 {
+			namespace = handler.resourcesNamespace
 		}
+		err = handler.client.Get(context.TODO(), client.ObjectKey{Namespace: namespace,
+			Name: name}, resource)
+		if errors.IsNotFound(err) {
+			err := fmt.Errorf("resource \"%s\" not exists", name)
+			responseJSON(Message{err.Error()}, w, http.StatusNotFound)
+			return
+		} else if err != nil {
+			responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+			return
+		}
+		resources := []Resource{*v1alpha1resourceToResource(resource)}
+		responseJSON(resources, w, http.StatusOK)
+	} else {
+		rsl := &fusionappv1alpha1.ResourceList{}
+		err = handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
+		if err != nil {
+			log.Warningf("failed to list resources", err)
+			responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+			return
+		}
+		resources := make([]Resource, 0)
+		if resourceAPIQueryBody.LabelSelector != nil && len(resourceAPIQueryBody.LabelSelector) > 0 {
+			mp := make(labels.Set)
+			for _, selector := range resourceAPIQueryBody.LabelSelector {
+				mp[selector.Key] = selector.Value
+			}
+			labelSelector := labels.SelectorFromSet(mp)
+			for _, item := range rsl.Items {
+				if labelSelector.Matches(labels.Set(item.Spec.Labels)) {
+					resources = append(resources, *v1alpha1resourceToResource(&item))
+				}
+			}
+		} else {
+			for _, resource := range rsl.Items {
+				if (len(resourceAPIQueryBody.Kind) == 0 || string(resource.Spec.ResourceKind) == resourceAPIQueryBody.Kind) &&
+					(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) {
+					resources = append(resources, *v1alpha1resourceToResource(&resource))
+				}
+			}
+		}
+		responseJSON(resources, w, http.StatusOK)
 	}
-	responseJSON(resources, w, http.StatusOK)
 }
 
 func (handler *APIHandler) CreateResource(w http.ResponseWriter, r *http.Request) {
