@@ -166,49 +166,15 @@ func (handler *APIHandler) UpdateResource(w http.ResponseWriter, r *http.Request
 }
 
 func (handler *APIHandler) BindResource(w http.ResponseWriter, r *http.Request)  {
-	refResource := new(AppRefResource)
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
-	defer r.Body.Close()
-	if err != nil {
-		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
-		return
-	}
-
-	if err := json.Unmarshal(body, &refResource); err != nil {
-		if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
-			responseJSON(Message{nerr.Error()}, w, http.StatusUnprocessableEntity)
-		} else {
-			responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
-		}
-		return
-	}
-	name := refResource.Name
-	namespace := refResource.Namespace
-	if len(namespace) == 0 {
-		namespace = handler.resourcesNamespace
-	}
-	resource := new(fusionappv1alpha1.Resource)
-	err = handler.client.Get(context.TODO(), client.ObjectKey{Namespace: namespace,
-		Name: name}, resource)
-	if errors.IsNotFound(err) {
-		err := fmt.Errorf("resource \"%s\" not exists", name)
-		responseJSON(Message{err.Error()}, w, http.StatusNotFound)
-		return
-	} else if err != nil {
-		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
-		return
-	}
-	resource.Status.Bound = true
-	err = handler.client.Update(context.TODO(), resource)
-	if err != nil {
-		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
-		return
-	}
-	responseJSON("bind", w, http.StatusOK)
+	handler.handleBind(w, r, true)
 }
 
 func (handler *APIHandler) UnBindResource(w http.ResponseWriter, r *http.Request)  {
-	refResource := new(AppRefResource)
+	handler.handleBind(w, r, false)
+}
+
+func (handler *APIHandler) handleBind(w http.ResponseWriter, r *http.Request, bind bool) {
+	resourceAPIBindBody := new(ResourceAPIBindBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	defer r.Body.Close()
 	if err != nil {
@@ -216,7 +182,7 @@ func (handler *APIHandler) UnBindResource(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := json.Unmarshal(body, &refResource); err != nil {
+	if err := json.Unmarshal(body, &resourceAPIBindBody); err != nil {
 		if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
 			responseJSON(Message{nerr.Error()}, w, http.StatusUnprocessableEntity)
 		} else {
@@ -224,8 +190,8 @@ func (handler *APIHandler) UnBindResource(w http.ResponseWriter, r *http.Request
 		}
 		return
 	}
-	name := refResource.Name
-	namespace := refResource.Namespace
+	name := resourceAPIBindBody.RefResource.Name
+	namespace := resourceAPIBindBody.RefResource.Namespace
 	if len(namespace) == 0 {
 		namespace = handler.resourcesNamespace
 	}
@@ -240,11 +206,11 @@ func (handler *APIHandler) UnBindResource(w http.ResponseWriter, r *http.Request
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 		return
 	}
-	resource.Status.Bound = false
+	resource.Status.Bound = bind
 	err = handler.client.Update(context.TODO(), resource)
 	if err != nil {
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 		return
 	}
-	responseJSON("unbind", w, http.StatusOK)
+	responseJSON("ok", w, http.StatusOK)
 }

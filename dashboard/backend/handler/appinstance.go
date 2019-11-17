@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -109,6 +110,33 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 			mp := make(labels.Set)
 			for _, selector := range resourceClaim.Selector {
 				mp[selector.Key] = selector.Value
+			}
+			if mp.Has("io.fusionapp.smarthome/type") {
+				url := "http://nemoworks.info:8080/resource/get/" + mp.Get("io.fusionapp.smarthome/type")
+				data, _ := json.Marshal(appInstanceAPICreateBody.UserLabel)
+				reader := bytes.NewReader(data)
+				request, _ := http.NewRequest("POST", url, reader)
+				request.Header.Set("Content-Type", "application/json;charset=UTF-8")
+				clt := &http.Client{}
+				resp, err := clt.Do(request)
+				if err == nil && ( resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated ){
+					respBody := new(RespBody)
+					body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 1048576))
+					if err := json.Unmarshal(body, &respBody); err == nil {
+						_ = resp.Body.Close()
+						if respBody.Status == 200 || respBody.Status == 201 {
+							fusionAppInstance.Spec.RefResource = append(fusionAppInstance.Spec.RefResource, fusionappv1alpha1.AppRefResource{
+								Kind: respBody.RespData.SourceDetail.Kind,
+								Name: respBody.RespData.SourceDetail.Name,
+								Namespace: respBody.RespData.SourceDetail.Namespace,
+								UID: respBody.RespData.SourceDetail.UID,
+							})
+							continue
+						}
+					} else {
+						_ = resp.Body.Close()
+					}
+				}
 			}
 			labelSelector := labels.SelectorFromSet(mp)
 			var resource *fusionappv1alpha1.Resource

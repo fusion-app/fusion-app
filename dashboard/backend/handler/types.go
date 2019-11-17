@@ -12,9 +12,11 @@ type Resource struct {
 	UID          string      `json:"uid,omitempty"`
  	Namespace    string      `json:"namespace,omitempty"`
 	Kind         string      `json:"kind"`
+	ProbeEnabled bool        `json:"probeEnabled,omitempty"`
 	Phase        string      `json:"phase,omitempty"`
 	Bound        bool        `json:"bound,omitempty"`
 	Name         string      `json:"name"`
+	AliasName    string      `json:"aliasName,omitempty"`
 	AccessMode   string      `json:"accessMode"`
 	Labels       map[string]string `json:"labels,omitempty"`
 	Operation    []fusionappv1alpha1.ResourceOperationSpec `json:"operation,omitempty"`
@@ -25,7 +27,10 @@ type Resource struct {
 }
 
 type ResourceSpec struct {
-	Phase        string      `json:"phase,omitempty"`
+	ProbeEnabled bool        `json:"probeEnabled"`
+	ProbeImage   string      `json:"probeImage,omitempty"`
+	AliasName    string      `json:"aliasName,omitempty"`
+	AccessMode   fusionappv1alpha1.ResourceAccessMode    `json:"accessMode,omitempty"`
 	Labels       map[string]string `json:"labels,omitempty"`
 	Operation    []fusionappv1alpha1.ResourceOperationSpec `json:"operation,omitempty"`
 	ProbeArgs    []string     `json:"probeArgs,omitempty"`
@@ -56,6 +61,11 @@ type ResourceAPIQueryBody struct {
 	LabelSelector []fusionappv1alpha1.SelectorSpec `json:"labelSelector,omitempty"`
 }
 
+type ResourceAPIBindBody struct {
+	RefResource    AppRefResource   `json:"refResource"`
+	RefAppInstance RefAppInstance   `json:"refAppInstance"`
+}
+
 type RefAppInstance struct {
 	UID	        string  `json:"uid,omitempty"`
 	Namespace	string  `json:"namespace,omitempty"`
@@ -83,6 +93,7 @@ type AppInstance struct {
 type AppInstanceAPICreateBody struct {
 	RefApp      RefApp             `json:"refApp"`
 	//RefResource []AppRefResource   `json:"refResource"`
+	UserLabel  map[string]string  `json:"userLabel,omitempty"`
 }
 
 type AppInstanceAPIQueryBody struct{
@@ -98,4 +109,14 @@ type AppInstanceAPIListBody struct {
 type SortOption struct {
 	Field      string              `json:"field"`
 	Order      bool                `json:"order"`
+}
+
+type RespBody struct {
+	RespData   RespData            `json:"data"`
+	Status     int                 `json:"status"`
+	Timestamp  int64               `json:"timestamp"`
+}
+
+type RespData struct {
+	SourceDetail  Resource   `json:"source_detail"`
 }

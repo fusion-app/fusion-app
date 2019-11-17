@@ -5,7 +5,7 @@ require (
 	github.com/Shopify/sarama v1.19.0
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
 	github.com/evanphx/json-patch v4.1.0+incompatible
-	github.com/go-openapi/spec v0.19.0
+	github.com/go-openapi/spec v0.19.2
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.6.2
 	github.com/iancoleman/strcase v0.0.0-20180726023541-3605ed457bf7
@@ -18,7 +18,8 @@ require (
 	k8s.io/apiextensions-apiserver v0.0.0-20190228180357-d002e88f6236
 	k8s.io/apimachinery v0.0.0-20190612125636-6a5db36e93ad
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/kube-openapi v0.0.0-20190603182131-db7b694dc208
+	k8s.io/code-generator v0.0.0-20191114215150-2a85f169f05f
+	k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a
 	sigs.k8s.io/controller-runtime v0.1.12
 	sigs.k8s.io/controller-tools v0.1.10
 )

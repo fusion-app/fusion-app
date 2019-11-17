@@ -9,6 +9,8 @@ spec:
     listKind: FusionAppList
     plural: fusionapps
     singular: fusionapp
+    shortNames:
+      - fapp
   scope: Cluster
   version: v1alpha1
   versions:

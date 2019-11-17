@@ -9,9 +9,11 @@ func v1alpha1resourceToResource(rs *v1alpha1.Resource) *Resource {
 	resource.UID = string(rs.UID)
 	resource.Namespace = rs.Namespace
 	resource.Kind = string(rs.Spec.ResourceKind)
+	resource.ProbeEnabled = rs.Spec.ProbeEnabled
 	resource.Phase = string(rs.Status.ProbePhase)
 	resource.Bound = rs.Status.Bound
 	resource.Name = rs.Name
+	resource.AliasName =  rs.Spec.AliasName
 	resource.AccessMode = string(rs.Spec.AccessMode)
 	if rs.Spec.Labels != nil {
 		in, out := &rs.Spec.Labels, &resource.Labels
@@ -42,9 +44,11 @@ func resourceToV1alpha1Resource(resource *Resource) *v1alpha1.Resource {
 	rs.Namespace = resource.Namespace
 	rs.Name = resource.Name
 	rs.Spec.ResourceKind = v1alpha1.ResourceKind(resource.Kind)
+	rs.Spec.ProbeEnabled = resource.ProbeEnabled
 	rs.Status.Bound = resource.Bound
 	rs.Spec.AccessMode = v1alpha1.ResourceAccessMode(resource.AccessMode)
 	rs.Spec.ProbeImage = resource.ProbeImage
+	rs.Spec.AliasName = resource.AliasName
 	if resource.Labels != nil {
 		in, out := &resource.Labels, &rs.Spec.Labels
 		*out = make(map[string]string, len(*in))
@@ -83,17 +87,29 @@ func updateResourceWithResourceSpec(resource *v1alpha1.Resource, spec *ResourceS
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if len(spec.AliasName) > 0 {
+		resource.Spec.AliasName = spec.AliasName
+	}
 	if len(spec.Description) > 0 {
 		resource.Spec.Description = spec.Description
 	}
 	if len(spec.Icon) > 0 {
 		resource.Spec.Icon = spec.Icon
 	}
-	if len(spec.Phase) > 0 {
-		if spec.Phase == v1alpha1.ProbePhasePending || spec.Phase == v1alpha1.ProbePhaseSynchronous {
-			resource.Spec.ProbeEnabled = true
+	if len(spec.ProbeImage) > 0 {
+		resource.Spec.ProbeImage = spec.ProbeImage
+	}
+	if len(spec.AccessMode) > 0 {
+		resource.Spec.AccessMode = spec.AccessMode
+	}
+	if spec.Operation != nil && len(spec.Operation) > 0 {
+		in, out := &spec.Operation, &resource.Spec.Operation
+		*out = make([]v1alpha1.ResourceOperationSpec, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	resource.Spec.ProbeEnabled = spec.ProbeEnabled
 }
 
 func v1alpha1AppInstanceToAppInstance(fusionAppInstance *v1alpha1.FusionAppInstance) *AppInstance {

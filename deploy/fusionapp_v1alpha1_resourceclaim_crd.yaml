@@ -9,6 +9,8 @@ spec:
     listKind: ResourceClaimList
     plural: resourceclaims
     singular: resourceclaim
+    shortNames:
+      - resc
   scope: Namespaced
   subresources:
     status: {}

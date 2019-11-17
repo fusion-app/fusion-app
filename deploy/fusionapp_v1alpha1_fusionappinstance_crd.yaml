@@ -9,6 +9,9 @@ spec:
     listKind: FusionAppInstanceList
     plural: fusionappinstances
     singular: fusionappinstance
+    shortNames:
+      - fappt
+      - fappi
   scope: Namespaced
   version: v1alpha1
   versions:

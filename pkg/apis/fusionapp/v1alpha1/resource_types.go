@@ -22,6 +22,7 @@ type ResourceSpec struct {
 	ProbeImage   string                `json:"probeImage,omitempty"`
 	ProbeArgs    []string              `json:"probeArgs"`
 	ProbeEnabled bool                  `json:"probeEnabled"`
+	AliasName    string                `json:"aliasName"`
 }
 
 type ResourceOperationSpec struct {
@@ -99,6 +100,7 @@ type ResourceStatus struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Resource is the Schema for the resources API
+// +genclient
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 type Resource struct {

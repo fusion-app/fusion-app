@@ -113,6 +113,14 @@ func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Resu
 	syncers := []syncer.Interface{}
 	if instance.Spec.ProbeEnabled {
 		syncers = append(syncers, NewProbeDeploySyncer(instance, r.client, r.scheme))
+	} else {
+		deploy := &appsv1.Deployment{}
+		err := r.client.Get(context.TODO(), client.ObjectKey{Name: instance.Name + "-probe-deploy", Namespace: instance.Namespace}, deploy)
+		if err == nil {
+			if err := r.client.Delete(context.TODO(), deploy); err != nil {
+				return reconcile.Result{}, err
+			}
+		}
 	}
 	if err := r.sync(syncers); err != nil {
 		return reconcile.Result{}, err
