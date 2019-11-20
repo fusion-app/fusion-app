@@ -13,3 +13,19 @@ spec:
   selector:
     name: fusion-app-backend
   type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fusion-app-watcher
+  namespace: fusion-app
+spec:
+  ports:
+    - name: socket
+      nodePort: 32023
+      port: 8081
+      protocol: TCP
+      targetPort: socket
+  selector:
+    name: fusion-app-backend
+  type: NodePort

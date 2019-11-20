@@ -17,7 +17,7 @@ spec:
       containers:
         - name: fusion-app-consumer
           # Replace this with the built image name
-          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/consumer:201911152152
+          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/consumer:201911191050
           command:
             - /usr/local/bin/fusionapp-consumer
             - subscribe
@@ -29,15 +29,7 @@ spec:
             - event-source-group
           imagePullPolicy: Always
           env:
-            - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: OPERATOR_NAME
-              value: "fusion-app"
-            - name: BROKER
-              value: "114.212.87.225:32590"

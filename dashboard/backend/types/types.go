@@ -1,18 +1,18 @@
-package handler
+package types
 
 import (
 	fusionappv1alpha1  "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
 )
 
 const (
-	defaultNamespace = "fusion-app-resources"
+	DefaultNamespace = "fusion-app-resources"
 )
 
 type Resource struct {
 	UID          string      `json:"uid,omitempty"`
  	Namespace    string      `json:"namespace,omitempty"`
 	Kind         string      `json:"kind"`
-	ProbeEnabled bool        `json:"probeEnabled,omitempty"`
+	ProbeEnabled bool        `json:"probeEnabled"`
 	Phase        string      `json:"phase,omitempty"`
 	Bound        bool        `json:"bound,omitempty"`
 	Name         string      `json:"name"`

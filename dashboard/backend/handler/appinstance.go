@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/fusion-app/fusion-app/dashboard/backend/types"
 	fusionappv1alpha1 "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
 	"github.com/fusion-app/fusion-app/pkg/util"
 	log "github.com/sirupsen/logrus"
@@ -18,7 +19,7 @@ import (
 )
 
 func (handler *APIHandler) QueryAppInstance(w http.ResponseWriter, r *http.Request) {
-	appInstanceAPIQueryBody := new(AppInstanceAPIQueryBody)
+	appInstanceAPIQueryBody := new(types.AppInstanceAPIQueryBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	defer r.Body.Close()
 	if err != nil {
@@ -51,12 +52,12 @@ func (handler *APIHandler) QueryAppInstance(w http.ResponseWriter, r *http.Reque
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 		return
 	}
-	appInstance := v1alpha1AppInstanceToAppInstance(fusionAppInstance)
+	appInstance := types.V1alpha1AppInstanceToAppInstance(fusionAppInstance)
 	responseJSON(appInstance, w, http.StatusOK)
 }
 
 func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Request) {
-	appInstanceAPICreateBody := new(AppInstanceAPICreateBody)
+	appInstanceAPICreateBody := new(types.AppInstanceAPICreateBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	defer r.Body.Close()
 	if err != nil {
@@ -120,7 +121,7 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 				clt := &http.Client{}
 				resp, err := clt.Do(request)
 				if err == nil && ( resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated ){
-					respBody := new(RespBody)
+					respBody := new(types.RespBody)
 					body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 1048576))
 					if err := json.Unmarshal(body, &respBody); err == nil {
 						_ = resp.Body.Close()
@@ -169,7 +170,7 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 }
 
 func (handler *APIHandler) ListAppInstance(w http.ResponseWriter, r *http.Request) {
-	appInstanceAPIListBody := new(AppInstanceAPIListBody)
+	appInstanceAPIListBody := new(types.AppInstanceAPIListBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	defer r.Body.Close()
 	if err != nil {
@@ -223,9 +224,9 @@ func (handler *APIHandler) ListAppInstance(w http.ResponseWriter, r *http.Reques
 	}
 	lowerBound := appInstanceAPIListBody.Limit*appInstanceAPIListBody.Page
 	upperBound := appInstanceAPIListBody.Limit*(appInstanceAPIListBody.Page+1)
-	appInstances := make([]AppInstance, 0)
+	appInstances := make([]types.AppInstance, 0)
 	for i := lowerBound; i < upperBound && i < len(ass); i ++ {
-		appInstances = append(appInstances, *v1alpha1AppInstanceToAppInstance(&ass[i]))
+		appInstances = append(appInstances, *types.V1alpha1AppInstanceToAppInstance(&ass[i]))
 	}
 	responseJSON(appInstances, w, http.StatusCreated)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/fusion-app/fusion-app/dashboard/backend/types"
 	fusionappv1alpha1 "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
 	resourcecontroller "github.com/fusion-app/fusion-app/pkg/controller/resource"
 	log "github.com/sirupsen/logrus"
@@ -16,7 +17,7 @@ import (
 )
 
 func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.Request) {
-	resourceAPIQueryBody := new(ResourceAPIQueryBody)
+	resourceAPIQueryBody := new(types.ResourceAPIQueryBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	defer r.Body.Close()
 	if err != nil {
@@ -50,7 +51,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 			responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 			return
 		}
-		resources := []Resource{*v1alpha1resourceToResource(resource)}
+		resources := []types.Resource{*types.V1alpha1ResourceToResource(resource)}
 		responseJSON(resources, w, http.StatusOK)
 	} else {
 		rsl := &fusionappv1alpha1.ResourceList{}
@@ -60,7 +61,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 			responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 			return
 		}
-		resources := make([]Resource, 0)
+		resources := make([]types.Resource, 0)
 		if resourceAPIQueryBody.LabelSelector != nil && len(resourceAPIQueryBody.LabelSelector) > 0 {
 			mp := make(labels.Set)
 			for _, selector := range resourceAPIQueryBody.LabelSelector {
@@ -69,14 +70,14 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 			labelSelector := labels.SelectorFromSet(mp)
 			for _, item := range rsl.Items {
 				if labelSelector.Matches(labels.Set(item.Spec.Labels)) {
-					resources = append(resources, *v1alpha1resourceToResource(&item))
+					resources = append(resources, *types.V1alpha1ResourceToResource(&item))
 				}
 			}
 		} else {
 			for _, resource := range rsl.Items {
 				if (len(resourceAPIQueryBody.Kind) == 0 || string(resource.Spec.ResourceKind) == resourceAPIQueryBody.Kind) &&
 					(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) {
-					resources = append(resources, *v1alpha1resourceToResource(&resource))
+					resources = append(resources, *types.V1alpha1ResourceToResource(&resource))
 				}
 			}
 		}
@@ -85,7 +86,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 }
 
 func (handler *APIHandler) CreateResource(w http.ResponseWriter, r *http.Request) {
-	resourceAPICreateBody := new(ResourceAPICreateBody)
+	resourceAPICreateBody := new(types.ResourceAPICreateBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	defer r.Body.Close()
 	if err != nil {
@@ -104,7 +105,7 @@ func (handler *APIHandler) CreateResource(w http.ResponseWriter, r *http.Request
 	if len(resource.Namespace) == 0 {
 		resource.Namespace = handler.resourcesNamespace
 	}
-	rs := resourceToV1alpha1Resource(&resource)
+	rs := types.ResourceToV1alpha1Resource(&resource)
 	resourcecontroller.AddKindLabel(rs)
 
 	err = handler.client.Create(context.TODO(), rs)
@@ -117,7 +118,7 @@ func (handler *APIHandler) CreateResource(w http.ResponseWriter, r *http.Request
 }
 
 func (handler *APIHandler) UpdateResource(w http.ResponseWriter, r *http.Request) {
-	resourceAPIPutBody := new(ResourceAPIPutBody)
+	resourceAPIPutBody := new(types.ResourceAPIPutBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	defer r.Body.Close()
 	if err != nil {
@@ -155,7 +156,7 @@ func (handler *APIHandler) UpdateResource(w http.ResponseWriter, r *http.Request
 		responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
 		return
 	}
-	updateResourceWithResourceSpec(resource, &resourceAPIPutBody.ResourceSpec)
+	types.UpdateResourceWithResourceSpec(resource, &resourceAPIPutBody.ResourceSpec)
 	err = handler.client.Update(context.TODO(), resource)
 	if err != nil {
 		log.Warningf("Failed to create workspace %v: %v", resource.Name, err)
@@ -174,7 +175,7 @@ func (handler *APIHandler) UnBindResource(w http.ResponseWriter, r *http.Request
 }
 
 func (handler *APIHandler) handleBind(w http.ResponseWriter, r *http.Request, bind bool) {
-	resourceAPIBindBody := new(ResourceAPIBindBody)
+	resourceAPIBindBody := new(types.ResourceAPIBindBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	defer r.Body.Close()
 	if err != nil {

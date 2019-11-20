@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/fusion-app/fusion-app/dashboard/backend/types"
 	"github.com/fusion-app/fusion-app/pkg/apis"
 	"github.com/fusion-app/fusion-app/pkg/util/k8sutil"
 	"github.com/sirupsen/logrus"
@@ -56,7 +57,7 @@ func NewAPIHandler(frontDir string) (*APIHandler, error) {
 	// Set resources namespace
 	apiHandler.resourcesNamespace = os.Getenv("RESOURCES_NAMESPACE")
 	if len(apiHandler.resourcesNamespace) == 0 {
-		apiHandler.resourcesNamespace = defaultNamespace
+		apiHandler.resourcesNamespace = types.DefaultNamespace
 	}
 
 	return apiHandler, nil

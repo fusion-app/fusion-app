@@ -1,10 +1,10 @@
-package handler
+package types
 
 import (
 	"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
 )
 
-func v1alpha1resourceToResource(rs *v1alpha1.Resource) *Resource {
+func V1alpha1ResourceToResource(rs *v1alpha1.Resource) *Resource {
 	resource := new(Resource)
 	resource.UID = string(rs.UID)
 	resource.Namespace = rs.Namespace
@@ -39,7 +39,7 @@ func v1alpha1resourceToResource(rs *v1alpha1.Resource) *Resource {
 	return resource
 }
 
-func resourceToV1alpha1Resource(resource *Resource) *v1alpha1.Resource {
+func ResourceToV1alpha1Resource(resource *Resource) *v1alpha1.Resource {
 	rs := new(v1alpha1.Resource)
 	rs.Namespace = resource.Namespace
 	rs.Name = resource.Name
@@ -73,7 +73,7 @@ func resourceToV1alpha1Resource(resource *Resource) *v1alpha1.Resource {
 	return rs
 }
 
-func updateResourceWithResourceSpec(resource *v1alpha1.Resource, spec *ResourceSpec) {
+func UpdateResourceWithResourceSpec(resource *v1alpha1.Resource, spec *ResourceSpec) {
 	if spec.Labels != nil {
 		if resource.Spec.Labels == nil {
 			resource.Spec.Labels = make(map[string]string)
@@ -112,7 +112,7 @@ func updateResourceWithResourceSpec(resource *v1alpha1.Resource, spec *ResourceS
 	resource.Spec.ProbeEnabled = spec.ProbeEnabled
 }
 
-func v1alpha1AppInstanceToAppInstance(fusionAppInstance *v1alpha1.FusionAppInstance) *AppInstance {
+func V1alpha1AppInstanceToAppInstance(fusionAppInstance *v1alpha1.FusionAppInstance) *AppInstance {
 	appInstance := new(AppInstance)
 	appInstance.UID = string(fusionAppInstance.UID)
 	appInstance.Namespace = fusionAppInstance.Namespace

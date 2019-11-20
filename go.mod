@@ -10,6 +10,8 @@ require (
 	github.com/gorilla/mux v1.6.2
 	github.com/iancoleman/strcase v0.0.0-20180726023541-3605ed457bf7
 	github.com/imdario/mergo v0.3.7
+	github.com/jcuga/golongpoll v1.1.0
+	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/operator-framework/operator-sdk v0.10.2-0.20191010224636-fd8747add695
 	github.com/rs/cors v1.7.0
 	github.com/sirupsen/logrus v1.4.1
