@@ -12,11 +12,21 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"net/http"
+	"strconv"
+)
+
+const (
+	DefaultListenPort int    = 8081
+)
+
+var (
+	listenPort  int
 )
 
 func main() {
 	var ns string
 	flag.StringVar(&ns, "namespace", "", "namespace")
+	flag.IntVar(&listenPort, "port", DefaultListenPort, `port this server listen to`)
 	flag.Parse()
 
 	// bootstrap config
@@ -37,33 +47,39 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create manager: %q", err)
 	}
-	go watchResourcesHandler(manager, clientset, ns)
+	p := ":" + strconv.Itoa(listenPort)
 	http.HandleFunc("/events", manager.SubscriptionHandler)
-	_ = http.ListenAndServe("127.0.0.1:8081", nil)
+	go watchResourcesHandler(manager, clientset, ns)
+	_ = http.ListenAndServe(p, nil)
 }
 
 // printPVCs prints a list of PersistentVolumeClaim on console
 func watchResourcesHandler(manager *golongpoll.LongpollManager, clientset *fusionappclient.Clientset, ns string) {
-	// watch future changes to Resources
-	watcher, err := clientset.FusionappV1alpha1().Resources(ns).Watch(metav1.ListOptions{})
-	if err != nil {
-		log.Fatal(err)
-	}
-	ch := watcher.ResultChan()
+	for {
+		// watch future changes to Resources
+		watcher, err := clientset.FusionappV1alpha1().Resources(ns).Watch(metav1.ListOptions{})
+		if err != nil {
+			log.Fatal(err)
+		}
+		for {
+			select {
+			case event := <-watcher.ResultChan():
+				resource, ok := event.Object.(*v1alpha1.Resource)
+				if !ok {
+					log.Fatal("unexpected type")
+					continue
+				}
+				switch event.Type {
+				case watch.Error:
+					log.Printf("watcher error encountered\n", resource.GetName())
+				default:
+					data, _ := json.Marshal(&Message{Type: event.Type, Resource: *types.V1alpha1ResourceToResource(resource)})
+					_ = manager.Publish("resources", string(data))
+				}
+			default:
+				break
+			}
+		}
 
-	for event := range ch {
-		resource, ok := event.Object.(*v1alpha1.Resource)
-		if !ok {
-			log.Fatal("unexpected type")
-			continue
-		}
-		switch event.Type {
-		case watch.Error:
-			log.Printf("watcher error encountered\n", resource.GetName())
-		default:
-			data, _ := json.Marshal(&Message{Type: event.Type, Resource: *types.V1alpha1ResourceToResource(resource)})
-			_ = manager.Publish("resources", string(data))
-		}
 	}
-	watcher.Stop()
 }

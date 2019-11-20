@@ -21,7 +21,7 @@ type Resource struct {
 	Labels       map[string]string `json:"labels,omitempty"`
 	Operation    []fusionappv1alpha1.ResourceOperationSpec `json:"operation,omitempty"`
 	Icon         string       `json:"icon,omitempty"`
-	Description  string       `json:"description,omitempty"`
+	Description  map[string]string       `json:"description,omitempty"`
 	ProbeArgs    []string     `json:"probeArgs"`
 	ProbeImage   string       `json:"probeImage"`
 }
@@ -35,7 +35,7 @@ type ResourceSpec struct {
 	Operation    []fusionappv1alpha1.ResourceOperationSpec `json:"operation,omitempty"`
 	ProbeArgs    []string     `json:"probeArgs,omitempty"`
 	Icon         string       `json:"icon,omitempty"`
-	Description  string       `json:"description,omitempty"`
+	Description  map[string]string     `json:"description,omitempty"`
 }
 
 type AppRefResource struct {
@@ -43,6 +43,9 @@ type AppRefResource struct {
 	Namespace	string   `json:"namespace,omitempty"`
 	Kind	    string   `json:"kind,omitempty"`
 	Name	    string   `json:"name,omitempty"`
+	AliasName   string   `json:"aliasName,omitempty"`
+	Icon        string   `json:"icon"`
+	Description map[string]string `json:"description"`
 }
 
 type ResourceAPICreateBody struct {

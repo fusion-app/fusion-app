@@ -16,7 +16,7 @@ type ResourceSpec struct {
 	Labels       map[string]string     `json:"labels"`
 	ResourceKind ResourceKind          `json:"resourceKind"`
 	Icon         string                `json:"icon,omitempty"`
-	Description  string                `json:"description,omitempty"`
+	Description  map[string]string              `json:"description,omitempty"`
 	AccessMode   ResourceAccessMode    `json:"accessMode"`
 	Operation    []ResourceOperationSpec `json:"operation,omitempty"`
 	ProbeImage   string                `json:"probeImage,omitempty"`

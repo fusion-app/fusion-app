@@ -120,17 +120,20 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 				request.Header.Set("Content-Type", "application/json;charset=UTF-8")
 				clt := &http.Client{}
 				resp, err := clt.Do(request)
-				if err == nil && ( resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated ){
+				if err == nil && ( resp.StatusCode == http.StatusOK ){
 					respBody := new(types.RespBody)
 					body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 1048576))
 					if err := json.Unmarshal(body, &respBody); err == nil {
 						_ = resp.Body.Close()
-						if respBody.Status == 200 || respBody.Status == 201 {
+						if respBody.Status == 200 {
 							fusionAppInstance.Spec.RefResource = append(fusionAppInstance.Spec.RefResource, fusionappv1alpha1.AppRefResource{
 								Kind: respBody.RespData.SourceDetail.Kind,
 								Name: respBody.RespData.SourceDetail.Name,
 								Namespace: respBody.RespData.SourceDetail.Namespace,
 								UID: respBody.RespData.SourceDetail.UID,
+								AliasName: respBody.RespData.SourceDetail.AliasName,
+								Icon: respBody.RespData.SourceDetail.Icon,
+								Description: respBody.RespData.SourceDetail.Description,
 							})
 							continue
 						}
@@ -156,6 +159,9 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 					Name: resource.Name,
 					Namespace: resource.Namespace,
 					UID: string(resource.UID),
+					AliasName: resource.Spec.AliasName,
+					Icon: resource.Spec.Icon,
+					Description: resource.Spec.Description,
 				})
 			}
 		}
@@ -165,7 +171,7 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 		log.Warningf("failed to create fusionAppInstance %v: %v", fusionAppInstance.Name, err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 	} else {
-		responseJSON(fusionAppInstance, w, http.StatusCreated)
+		responseJSON(fusionAppInstance, w, http.StatusOK)
 	}
 }
 
@@ -228,5 +234,5 @@ func (handler *APIHandler) ListAppInstance(w http.ResponseWriter, r *http.Reques
 	for i := lowerBound; i < upperBound && i < len(ass); i ++ {
 		appInstances = append(appInstances, *types.V1alpha1AppInstanceToAppInstance(&ass[i]))
 	}
-	responseJSON(appInstances, w, http.StatusCreated)
+	responseJSON(appInstances, w, http.StatusOK)
 }

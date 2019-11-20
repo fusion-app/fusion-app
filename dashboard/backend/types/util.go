@@ -35,7 +35,13 @@ func V1alpha1ResourceToResource(rs *v1alpha1.Resource) *Resource {
 		copy(*out, *in)
 	}
 	resource.Icon = rs.Spec.Icon
-	resource.Description = rs.Spec.Description
+	if rs.Spec.Description != nil {
+		in, out := &rs.Spec.Description, &resource.Description
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return resource
 }
 
@@ -69,7 +75,13 @@ func ResourceToV1alpha1Resource(resource *Resource) *v1alpha1.Resource {
 		copy(*out, *in)
 	}
 	rs.Spec.Icon = resource.Icon
-	rs.Spec.Description = resource.Description
+	if resource.Description != nil {
+		in, out := &resource.Description, &rs.Spec.Description
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return rs
 }
 
@@ -90,8 +102,12 @@ func UpdateResourceWithResourceSpec(resource *v1alpha1.Resource, spec *ResourceS
 	if len(spec.AliasName) > 0 {
 		resource.Spec.AliasName = spec.AliasName
 	}
-	if len(spec.Description) > 0 {
-		resource.Spec.Description = spec.Description
+	if spec.Description != nil {
+		in, out := &spec.Description, &resource.Spec.Description
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
 	}
 	if len(spec.Icon) > 0 {
 		resource.Spec.Icon = spec.Icon

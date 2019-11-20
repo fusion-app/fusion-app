@@ -27,5 +27,5 @@ spec:
       protocol: TCP
       targetPort: socket
   selector:
-    name: fusion-app-backend
+    name: fusion-app-watcher
   type: NodePort

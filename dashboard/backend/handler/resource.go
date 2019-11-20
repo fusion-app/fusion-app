@@ -113,7 +113,7 @@ func (handler *APIHandler) CreateResource(w http.ResponseWriter, r *http.Request
 		log.Warningf("Failed to create resource %v: %v", resource.Name, err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 	} else {
-		responseJSON(resource, w, http.StatusCreated)
+		responseJSON(resource, w, http.StatusOK)
 	}
 }
 

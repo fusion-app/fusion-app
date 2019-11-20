@@ -28,6 +28,9 @@ type AppRefResource struct {
 	Namespace	string    `json:"namespace,omitempty"`
 	Kind	    string    `json:"kind"`
 	Name	    string    `json:"name"`
+	AliasName   string   `json:"aliasName,omitempty"`
+	Icon        string   `json:"icon"`
+	Description map[string]string `json:"description"`
 }
 
 // FusionAppInstanceStatus defines the observed state of FusionAppInstance
