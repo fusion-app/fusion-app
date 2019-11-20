@@ -56,27 +56,43 @@ func main() {
 // printPVCs prints a list of PersistentVolumeClaim on console
 func watchResourcesHandler(manager *golongpoll.LongpollManager, clientset *fusionappclient.Clientset, ns string) {
 	for {
+		rsl, err := clientset.FusionappV1alpha1().Resources(ns).List(metav1.ListOptions{})
+		if err != nil {
+			log.Fatal(err)
+		}
+		originalCount := len(rsl.Items)
 		// watch future changes to Resources
 		watcher, err := clientset.FusionappV1alpha1().Resources(ns).Watch(metav1.ListOptions{})
 		if err != nil {
 			log.Fatal(err)
 		}
 		for {
+			handled := true
 			select {
 			case event := <-watcher.ResultChan():
 				resource, ok := event.Object.(*v1alpha1.Resource)
 				if !ok {
-					log.Fatal("unexpected type")
-					continue
-				}
-				switch event.Type {
-				case watch.Error:
-					log.Printf("watcher error encountered\n", resource.GetName())
-				default:
-					data, _ := json.Marshal(&Message{Type: event.Type, Resource: *types.V1alpha1ResourceToResource(resource)})
-					_ = manager.Publish("resources", string(data))
+					log.Printf("unexpected type")
+					handled = false
+				} else {
+					switch event.Type {
+					case watch.Error:
+						log.Printf("watcher error encountered\n", resource.GetName())
+						handled = false
+					default:
+						data, _ := json.Marshal(&Message{Type: event.Type, Resource: *types.V1alpha1ResourceToResource(resource)})
+						if originalCount <= 0 {
+							_ = manager.Publish("resources", string(data))
+						} else {
+							originalCount --
+						}
+					}
 				}
 			default:
+				break
+			}
+			if !handled {
+				watcher.Stop()
 				break
 			}
 		}
