@@ -44,12 +44,22 @@ type AppRefResource struct {
 	Kind	    string   `json:"kind,omitempty"`
 	Name	    string   `json:"name,omitempty"`
 	AliasName   string   `json:"aliasName,omitempty"`
-	Icon        string   `json:"icon"`
-	Description map[string]string `json:"description"`
+	Icon        string   `json:"icon,omitempty"`
+	Description map[string]string `json:"description,omitempty"`
+}
+
+type AppAPICreateBody struct {
+	AppSpec     App       `json:"appSpec"`
 }
 
 type ResourceAPICreateBody struct {
 	ResourceSpec Resource `json:"resourceSpec"`
+}
+
+type AppAPIPutBody struct {
+	Name        string    `json:"name,omitempty"`
+	UID         string    `json:"uid,omitempty"`
+	AppSpec     App       `json:"appSpec"`
 }
 
 type ResourceAPIPutBody struct {
@@ -67,6 +77,16 @@ type ResourceAPIQueryBody struct {
 type ResourceAPIBindBody struct {
 	RefResource    AppRefResource   `json:"refResource"`
 	RefAppInstance RefAppInstance   `json:"refAppInstance"`
+}
+
+type App struct {
+	UID	            string                `json:"uid,omitempty"`
+	Name	        string		          `json:"name"`
+	ResourceClaim   []fusionappv1alpha1.ResourceClaimSpec   `json:"resourceClaim,omitempty"`
+	AliasName       string                `json:"aliasName,omitempty"`
+	Icon            string                `json:"icon,omitempty"`
+	Description     map[string]string     `json:"description,omitempty"`
+	Labels          map[string]string     `json:"labels,omitempty"`
 }
 
 type RefAppInstance struct {
@@ -87,7 +107,7 @@ type AppInstance struct {
 	Name	    string              `json:"name"`
 	RefApp      RefApp              `json:"refApp"`
 	RefResource	[]AppRefResource    `json:"refResource"`
-	Status	    string              `json:"status"`
+	Status	    []fusionappv1alpha1.Action  `json:"status"`
 	StartTime	string              `json:"startTime"`
 	UpdateTime	string              `json:"updateTime"`
 	EndTime	    string              `json:"endTime"`

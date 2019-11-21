@@ -27,12 +27,17 @@ import (
 
 type FusionappV1alpha1Interface interface {
 	RESTClient() rest.Interface
+	FusionAppInstancesGetter
 	ResourcesGetter
 }
 
 // FusionappV1alpha1Client is used to interact with features provided by the fusionapp.io group.
 type FusionappV1alpha1Client struct {
 	restClient rest.Interface
+}
+
+func (c *FusionappV1alpha1Client) FusionAppInstances(namespace string) FusionAppInstanceInterface {
+	return newFusionAppInstances(c, namespace)
 }
 
 func (c *FusionappV1alpha1Client) Resources(namespace string) ResourceInterface {

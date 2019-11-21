@@ -13,9 +13,13 @@ type FusionAppInstanceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	RefApp      RefApp            `json:"refApp,omitempty"`
-	RefResource []AppRefResource  `json:"refResource,omitempty"`
-	Labels      map[string]string `json:"labels,omitempty"`
+	RefApp       RefApp            `json:"refApp,omitempty"`
+	RefResource  []AppRefResource  `json:"refResource,omitempty"`
+	Labels       map[string]string `json:"labels,omitempty"`
+	ProbeImage   string            `json:"probeImage,omitempty"`
+	ProbeArgs    []string          `json:"probeArgs,omitempty"`
+	ProbeEnabled bool              `json:"probeEnabled"`
+	AliasName    string            `json:"aliasName,omitempty"`
 }
 
 type RefApp struct {
@@ -29,8 +33,8 @@ type AppRefResource struct {
 	Kind	    string    `json:"kind"`
 	Name	    string    `json:"name"`
 	AliasName   string   `json:"aliasName,omitempty"`
-	Icon        string   `json:"icon"`
-	Description map[string]string `json:"description"`
+	Icon        string   `json:"icon,omitempty"`
+	Description map[string]string `json:"description,omitempty"`
 }
 
 // FusionAppInstanceStatus defines the observed state of FusionAppInstance
@@ -44,12 +48,24 @@ type FusionAppInstanceStatus struct {
 	EndTime    *metav1.Time  `json:"endTime,omitempty"`
 	UpdateTime *metav1.Time  `json:"updateTime,omitempty"`
 	Phase      FusionAppInstancePhase `json:"phase"`
+	ProbePhase ProbePhase    `json:"probePhase,omitempty"`
+	ActionStatus []Action    `json:"actionStatus"`
 }
+
+
+type Action struct {
+	ActionID    string         `json:"actionID"`
+	RefResource AppRefResource `json:"refResource"`
+	State       ActionState    `json:"state"`
+}
+
+type ActionState string
 
 type FusionAppInstancePhase string
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // FusionAppInstance is the Schema for the fusionappinstances API
+// +genclient
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 type FusionAppInstance struct {

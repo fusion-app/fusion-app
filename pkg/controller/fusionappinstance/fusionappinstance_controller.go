@@ -2,24 +2,23 @@ package fusionappinstance
 
 import (
 	"context"
-
 	fusionappv1alpha1 "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
+	"github.com/fusion-app/fusion-app/pkg/syncer"
+	log "github.com/sirupsen/logrus"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-var log = logf.Log.WithName("controller_fusionappinstance")
+const controllerName = "fusionappinstance-controller"
 
 /**
 * USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
@@ -40,7 +39,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("fusionappinstance-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New(controllerName, mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
@@ -51,14 +50,20 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// TODO(user): Modify this to be the types you create that are owned by the primary resource
-	// Watch for changes to secondary resource Pods and requeue the owner FusionAppInstance
-	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &fusionappv1alpha1.FusionAppInstance{},
-	})
-	if err != nil {
-		return err
+	subResources := []runtime.Object{
+		&corev1.Pod{},
+		&appsv1.Deployment{},
+	}
+
+	// Watch for changes to secondary resource Pods and requeue the owner Resource
+	for _, subResource := range subResources {
+		err = c.Watch(&source.Kind{Type: subResource}, &handler.EnqueueRequestForOwner{
+			IsController: true,
+			OwnerType:    &fusionappv1alpha1.FusionAppInstance{},
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -73,18 +78,16 @@ type ReconcileFusionAppInstance struct {
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
 	scheme *runtime.Scheme
+	recorder record.EventRecorder
 }
 
 // Reconcile reads that state of the cluster for a FusionAppInstance object and makes changes based on the state read
 // and what is in the FusionAppInstance.Spec
-// TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
-// a Pod as an example
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileFusionAppInstance) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	reqLogger.Info("Reconciling FusionAppInstance")
+	log.Printf("Reconciling FusionAppInstance")
 
 	// Fetch the FusionAppInstance instance
 	instance := &fusionappv1alpha1.FusionAppInstance{}
@@ -100,54 +103,52 @@ func (r *ReconcileFusionAppInstance) Reconcile(request reconcile.Request) (recon
 		return reconcile.Result{}, err
 	}
 
-	// Define a new Pod object
-	pod := newPodForCR(instance)
-
-	// Set FusionAppInstance instance as the owner and controller
-	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
-		return reconcile.Result{}, err
+	log.Printf("Reconciling FusionAppInstance %s", instance.Name)
+	// if the resource is terminating, stop reconcile
+	if instance.ObjectMeta.DeletionTimestamp != nil {
+		return reconcile.Result{}, nil
 	}
-
-	// Check if this Pod already exists
-	found := &corev1.Pod{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
-	if err != nil && errors.IsNotFound(err) {
-		reqLogger.Info("Creating a new Pod", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
-		err = r.client.Create(context.TODO(), pod)
+	if len(instance.Spec.ProbeImage) == 0 || len(instance.Spec.ProbeArgs) == 0 {
+		app := &fusionappv1alpha1.FusionApp{}
+		err := r.client.Get(context.TODO(),
+			client.ObjectKey{Name: instance.Spec.RefApp.Name, Namespace: instance.Namespace}, app)
 		if err != nil {
+			if errors.IsNotFound(err) {
+				return reconcile.Result{}, nil
+			}
+			// Error reading the object - requeue the request.
 			return reconcile.Result{}, err
 		}
-
-		// Pod created successfully - don't requeue
-		return reconcile.Result{}, nil
-	} else if err != nil {
+		instance.Spec.ProbeImage = app.Spec.ProbeImage
+		in, out := &app.Spec.ProbeArgs, &instance.Spec.ProbeArgs
+		*out = make([]string, len(*in))
+		for i := range *in {
+			(*in)[i] = (*out)[i]
+		}
+	}
+	syncers := []syncer.Interface{}
+	if instance.Spec.ProbeEnabled {
+		syncers = append(syncers, NewProbeDeploySyncer(instance, r.client, r.scheme))
+	} else {
+		deploy := &appsv1.Deployment{}
+		err := r.client.Get(context.TODO(), client.ObjectKey{Name: instance.Name + "-probe-deploy", Namespace: instance.Namespace}, deploy)
+		if err == nil {
+			if err := r.client.Delete(context.TODO(), deploy); err != nil {
+				return reconcile.Result{}, err
+			}
+		}
+	}
+	if err := r.sync(syncers); err != nil {
 		return reconcile.Result{}, err
 	}
-
-	// Pod already exists - don't requeue
-	reqLogger.Info("Skip reconcile: Pod already exists", "Pod.Namespace", found.Namespace, "Pod.Name", found.Name)
-	return reconcile.Result{}, nil
+	return reconcile.Result{}, r.updateStatus(instance)
 }
 
-// newPodForCR returns a busybox pod with the same name/namespace as the cr
-func newPodForCR(cr *fusionappv1alpha1.FusionAppInstance) *corev1.Pod {
-	labels := map[string]string{
-		"app": cr.Name,
+func (r *ReconcileFusionAppInstance) sync(syncers []syncer.Interface) error {
+	for _, s := range syncers {
+		if err := syncer.Sync(context.TODO(), s, r.recorder); err != nil {
+			return err
+		}
 	}
-	return &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
-			Namespace: cr.Namespace,
-			Labels:    labels,
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:    "busybox",
-					Image:   "busybox",
-					Command: []string{"sleep", "3600"},
-				},
-			},
-		},
-	}
+	return nil
 }

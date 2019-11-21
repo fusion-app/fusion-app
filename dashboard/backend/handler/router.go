@@ -51,6 +51,24 @@ func NewRouter(handler *APIHandler) http.Handler {
 			handler.UnBindResource,
 		},
 		{
+			"QueryApp",
+			"GET",
+			"/apis/app",
+			handler.ListApp,
+		},
+		{
+			"UpdateApp",
+			"PUT",
+			"/apis/app",
+			handler.UpdateApp,
+		},
+		{
+			"CreateApp",
+			"POST",
+			"/apis/app",
+			handler.CreateApp,
+		},
+		{
 			"QueryAppInstance",
 			"GET",
 			"/apis/app_instance",

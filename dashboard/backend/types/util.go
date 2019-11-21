@@ -128,6 +128,74 @@ func UpdateResourceWithResourceSpec(resource *v1alpha1.Resource, spec *ResourceS
 	resource.Spec.ProbeEnabled = spec.ProbeEnabled
 }
 
+func V1alpha1AppToApp(fusionApp *v1alpha1.FusionApp) *App {
+	app := new(App)
+	app.UID = string(fusionApp.UID)
+	app.Name = fusionApp.Name
+	if fusionApp.Spec.ResourceClaim != nil {
+		in, out := &fusionApp.Spec.ResourceClaim, &app.ResourceClaim
+		*out = make([]v1alpha1.ResourceClaimSpec, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	app.Icon = fusionApp.Spec.Icon
+	app.AliasName = fusionApp.Spec.AliasName
+	if fusionApp.Spec.Description != nil {
+		in, out := &fusionApp.Spec.Description, &app.Description
+		*out  = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
+	return app
+}
+
+func AppToV1alpha1App(app *App) *v1alpha1.FusionApp {
+	fusionApp := new(v1alpha1.FusionApp)
+	fusionApp.Name = app.Name
+	if app.ResourceClaim != nil {
+		in, out := &app.ResourceClaim, &fusionApp.Spec.ResourceClaim
+		*out = make([]v1alpha1.ResourceClaimSpec, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	fusionApp.Spec.Icon = app.Icon
+	fusionApp.Spec.AliasName = app.AliasName
+	if app.Description != nil {
+		in, out := &app.Description, &fusionApp.Spec.Description
+		*out  = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
+	return fusionApp
+}
+
+func UpdateAppWithAppSpec(fusionApp *v1alpha1.FusionApp, app *App)  {
+	if app.ResourceClaim != nil {
+		in, out := &app.ResourceClaim, &fusionApp.Spec.ResourceClaim
+		*out = make([]v1alpha1.ResourceClaimSpec, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if len(app.Icon) != 0 {
+		fusionApp.Spec.Icon = app.Icon
+	}
+	if len(app.AliasName) != 0 {
+		fusionApp.Spec.AliasName = app.AliasName
+	}
+	if app.Description != nil {
+		in, out := &app.Description, &fusionApp.Spec.Description
+		*out  = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
+}
+
 func V1alpha1AppInstanceToAppInstance(fusionAppInstance *v1alpha1.FusionAppInstance) *AppInstance {
 	appInstance := new(AppInstance)
 	appInstance.UID = string(fusionAppInstance.UID)
@@ -144,7 +212,13 @@ func V1alpha1AppInstanceToAppInstance(fusionAppInstance *v1alpha1.FusionAppInsta
 			appInstance.RefResource[i].Namespace = refResource.Namespace
 		}
 	}
-	appInstance.Status = string(fusionAppInstance.Status.Phase)
+	if fusionAppInstance.Status.ActionStatus != nil {
+		in, out := &fusionAppInstance.Status.ActionStatus, &appInstance.Status
+		*out = make([]v1alpha1.Action, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	if fusionAppInstance.Status.StartTime != nil {
 		appInstance.StartTime = fusionAppInstance.Status.StartTime.String()
 	}

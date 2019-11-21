@@ -16,8 +16,10 @@ type FusionAppSpec struct {
 	ResourceClaim   []ResourceClaimSpec   `json:"resourceClaim,omitempty"`
 	AliasName       string                `json:"aliasName"`
 	Icon            string                `json:"icon,omitempty"`
-	Description     string                `json:"description,omitempty"`
+	Description     map[string]string     `json:"description,omitempty"`
 	Labels          map[string]string     `json:"labels,omitempty"`
+	ProbeImage      string                `json:"probeImage,omitempty"`
+	ProbeArgs       []string              `json:"probeArgs"`
 }
 
 

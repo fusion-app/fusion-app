@@ -4,12 +4,13 @@ import "time"
 
 type Message struct {
 	Target      TargetCRDOption `json:"target"`
-	UpdatePatch []PatchItem     `json:"updatePatch"`
-	ProbeTime   time.Time       `json:"probeTime"`
+	LabelsPatch []PatchItem     `json:"labelsPatch,omitempty"`
+	StatusPatch []PatchItem     `json:"statusPatch,omitempty"`
+	ProbeTime   time.Time       `json:"probeTime,omitempty"`
 }
 
 type TargetCRDOption struct {
-	UID       string `json:"uid"`
+	UID       string `json:"uid,omitempty"`
 	Kind      string `json:"kind"`
 	Name      string `json:"name"`
 	Namespace string `json:"namespace"`

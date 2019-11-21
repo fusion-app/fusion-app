@@ -4,12 +4,13 @@ import (
 	fusionappv1alpha1 "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	k8sresource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 )
 
 const (
-	defaultProbeImage      = "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:201911142112"
+	defaultProbeImage      = "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:resource-prober.201911211325"
 
 	topic                  = "resource-event-source"
 
@@ -49,6 +50,12 @@ func newDeployForProbe(resource *fusionappv1alpha1.Resource) *appsv1.Deployment 
 							Name:    resource.Name,
 							Image:   probeImage,
 							Args:    args,
+							Resources: corev1.ResourceRequirements{
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU: k8sresource.MustParse("500m"),
+									corev1.ResourceMemory: k8sresource.MustParse("2Gi"),
+								},
+							},
 						},
 					},
 				},

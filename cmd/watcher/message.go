@@ -5,7 +5,12 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 )
 
-type Message struct {
+type ResourceMessage struct {
 	Type       watch.EventType    `json:"type"`
 	Resource   types.Resource     `json:"resource"`
+}
+
+type FusionAppInstanceMessage struct {
+	Type          watch.EventType    `json:"type"`
+	AppInstance   types.AppInstance  `json:"appInstance"`
 }

@@ -65,7 +65,8 @@ func subscribeTopic(topic string, broker string, group string) error {
 				continue
 			}
 			var obj runtime.Object
-			var original []byte
+			var originalLabels, originalStatus []byte
+			var modifiedLables, modifiedStatus []byte
 			if msg.Target.Kind ==  "Resource" {
 				resource := new(v1alpha1.Resource)
 				err := clientset.Get(context.TODO(), client.ObjectKey{Namespace: msg.Target.Namespace,
@@ -79,7 +80,8 @@ func subscribeTopic(topic string, broker string, group string) error {
 				if resource.Spec.Labels == nil {
 					resource.Spec.Labels = map[string]string{}
 				}
-				original, err = json.Marshal(resource.Spec.Labels)
+				originalLabels, err = json.Marshal(resource.Spec.Labels)
+				originalStatus, err = json.Marshal(resource.Status)
 				obj = resource
 			} else if msg.Target.Kind ==  "FusionApp" {
 				app := new(v1alpha1.FusionApp)
@@ -94,7 +96,8 @@ func subscribeTopic(topic string, broker string, group string) error {
 				if app.Spec.Labels == nil {
 					app.Spec.Labels = map[string]string{}
 				}
-				original, err = json.Marshal(app.Spec.Labels)
+				originalLabels, err = json.Marshal(app.Spec.Labels)
+				originalStatus, err = json.Marshal(app.Status)
 				obj = app
 			} else if msg.Target.Kind ==  "FusionAppInstance" {
 				appInstance := new(v1alpha1.FusionAppInstance)
@@ -109,34 +112,69 @@ func subscribeTopic(topic string, broker string, group string) error {
 				if appInstance.Spec.Labels == nil {
 					appInstance.Spec.Labels = map[string]string{}
 				}
-				original, err = json.Marshal(appInstance.Spec.Labels)
+				originalLabels, err = json.Marshal(appInstance.Spec.Labels)
+				originalStatus, err = json.Marshal(appInstance.Status)
 				obj = appInstance
 			} else {
 				log.Printf("No such kind: %s", msg.Target.Kind)
 				continue
 			}
-			patchJson, err := json.Marshal(msg.UpdatePatch)
-			patch, err := jsonpatch.DecodePatch(patchJson)
-			if err != nil {
-				log.Printf("Failed to parse patch: %v", err)
-				continue
+			if msg.LabelsPatch != nil && len(msg.LabelsPatch) > 0 {
+				labelsPatchJson, err := json.Marshal(msg.LabelsPatch)
+				labelsPatch, err := jsonpatch.DecodePatch(labelsPatchJson)
+				if err != nil {
+					log.Printf("Failed to parse labelsPatch: %v", err)
+					continue
+				}
+				log.Printf("labelsPatchJson: %s", string(labelsPatchJson))
+				log.Printf("originalLabels: %s", string(originalLabels))
+				modifiedLables, err = labelsPatch.Apply(originalLabels)
+				if err != nil {
+					log.Printf("Failed to apply labelsPatch: %v", err)
+					continue
+				}
+				log.Printf("modifiedLabels: %s", string(modifiedLables))
 			}
-			log.Printf("patchJson: %s", string(patchJson))
-			log.Printf("original: %s", string(original))
-			modified, err := patch.Apply(original)
-			if err != nil {
-				log.Printf("Failed to apply patch: %v", err)
-				continue
+			if msg.StatusPatch != nil && len(msg.StatusPatch) > 0 {
+				statusPatchJson, err := json.Marshal(msg.StatusPatch)
+				statusPatch, err := jsonpatch.DecodePatch(statusPatchJson)
+				if err != nil {
+					log.Printf("Failed to parse statusPatch: %v", err)
+					continue
+				}
+				log.Printf("statusPatchJson: %s", string(statusPatchJson))
+				log.Printf("originalStatus: %s", string(originalStatus))
+				modifiedStatus, err = statusPatch.Apply(originalStatus)
+				if err != nil {
+					log.Printf("Failed to apply statusPatch: %v", err)
+					continue
+				}
+				log.Printf("modifiedStatus: %s", string(modifiedStatus))
 			}
-			log.Printf("modified: %s", string(modified))
-			newLabels := map[string]string{}
-			err = json.Unmarshal(modified, &newLabels)
 			if msg.Target.Kind ==  "Resource" {
 				resource := obj.(*v1alpha1.Resource)
-				in, out := &newLabels, &resource.Spec.Labels
-				*out = make(map[string]string, len(*in))
-				for key, val := range *in {
-					(*out)[key] = val
+				if modifiedLables != nil {
+					newLabels := map[string]string{}
+					err := json.Unmarshal(modifiedLables, &newLabels)
+					if err != nil {
+						log.Printf("Failed to modify Labels: %v", err)
+						continue
+					}
+					in, out := &newLabels, &resource.Spec.Labels
+					*out = make(map[string]string, len(*in))
+					for key, val := range *in {
+						(*out)[key] = val
+					}
+				}
+				if modifiedStatus != nil {
+					newStatus := v1alpha1.ResourceStatus{}
+					err := json.Unmarshal(modifiedLables, &newStatus)
+					if err != nil {
+						log.Printf("Failed to modify Status: %v", err)
+						continue
+					}
+					in, out := &newStatus, &resource.Status
+					in.DeepCopyInto(out)
 				}
 				err = clientset.Update(context.TODO(), resource)
 				if err != nil {
@@ -145,10 +183,28 @@ func subscribeTopic(topic string, broker string, group string) error {
 				}
 			} else if msg.Target.Kind ==  "FusionApp" {
 				app := obj.(*v1alpha1.FusionApp)
-				in, out := &newLabels, &app.Spec.Labels
-				*out = make(map[string]string, len(*in))
-				for key, val := range *in {
-					(*out)[key] = val
+				if modifiedLables != nil {
+					newLabels := map[string]string{}
+					err := json.Unmarshal(modifiedLables, &newLabels)
+					if err != nil {
+						log.Printf("Failed to modify Labels: %v", err)
+						continue
+					}
+					in, out := &newLabels, &app.Spec.Labels
+					*out = make(map[string]string, len(*in))
+					for key, val := range *in {
+						(*out)[key] = val
+					}
+				}
+				if modifiedStatus != nil {
+					newStatus := v1alpha1.FusionAppStatus{}
+					err := json.Unmarshal(modifiedLables, &newStatus)
+					if err != nil {
+						log.Printf("Failed to modify Status: %v", err)
+						continue
+					}
+					in, out := &newStatus, &app.Status
+					in.DeepCopyInto(out)
 				}
 				err = clientset.Update(context.TODO(), app)
 				if err != nil {
@@ -157,10 +213,28 @@ func subscribeTopic(topic string, broker string, group string) error {
 				}
 			} else if msg.Target.Kind ==  "FusionAppInstance" {
 				appInstance := obj.(*v1alpha1.FusionAppInstance)
-				in, out := &newLabels, &appInstance.Spec.Labels
-				*out = make(map[string]string, len(*in))
-				for key, val := range *in {
-					(*out)[key] = val
+				if modifiedLables != nil {
+					newLabels := map[string]string{}
+					err := json.Unmarshal(modifiedLables, &newLabels)
+					if err != nil {
+						log.Printf("Failed to modify Labels: %v", err)
+						continue
+					}
+					in, out := &newLabels, &appInstance.Spec.Labels
+					*out = make(map[string]string, len(*in))
+					for key, val := range *in {
+						(*out)[key] = val
+					}
+				}
+				if modifiedStatus != nil {
+					newStatus := v1alpha1.FusionAppInstanceStatus{}
+					err := json.Unmarshal(modifiedLables, &newStatus)
+					if err != nil {
+						log.Printf("Failed to modify Status: %v", err)
+						continue
+					}
+					in, out := &newStatus, &appInstance.Status
+					in.DeepCopyInto(out)
 				}
 				err = clientset.Update(context.TODO(), appInstance)
 				if err != nil {

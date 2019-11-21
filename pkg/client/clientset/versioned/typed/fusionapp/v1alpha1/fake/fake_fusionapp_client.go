@@ -28,6 +28,10 @@ type FakeFusionappV1alpha1 struct {
 	*testing.Fake
 }
 
+func (c *FakeFusionappV1alpha1) FusionAppInstances(namespace string) v1alpha1.FusionAppInstanceInterface {
+	return &FakeFusionAppInstances{c, namespace}
+}
+
 func (c *FakeFusionappV1alpha1) Resources(namespace string) v1alpha1.ResourceInterface {
 	return &FakeResources{c, namespace}
 }

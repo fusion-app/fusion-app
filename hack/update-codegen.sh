@@ -22,6 +22,7 @@ set -o pipefail
 # --output-base    because this script should also be able to run inside the vendor dir of
 #                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
+chmod +x ../vendor/k8s.io/code-generator/generate-groups.sh
 ../vendor/k8s.io/code-generator/generate-groups.sh \
   "client" \
   github.com/fusion-app/fusion-app/pkg/client \

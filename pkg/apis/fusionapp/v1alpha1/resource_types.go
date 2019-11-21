@@ -16,13 +16,13 @@ type ResourceSpec struct {
 	Labels       map[string]string     `json:"labels"`
 	ResourceKind ResourceKind          `json:"resourceKind"`
 	Icon         string                `json:"icon,omitempty"`
-	Description  map[string]string              `json:"description,omitempty"`
+	Description  map[string]string     `json:"description,omitempty"`
 	AccessMode   ResourceAccessMode    `json:"accessMode"`
 	Operation    []ResourceOperationSpec `json:"operation,omitempty"`
 	ProbeImage   string                `json:"probeImage,omitempty"`
 	ProbeArgs    []string              `json:"probeArgs"`
 	ProbeEnabled bool                  `json:"probeEnabled"`
-	AliasName    string                `json:"aliasName"`
+	AliasName    string                `json:"aliasName,omitempty"`
 }
 
 type ResourceOperationSpec struct {
