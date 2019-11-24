@@ -5,7 +5,11 @@ import (
 )
 
 const (
-	DefaultNamespace = "fusion-app-resources"
+	DefaultNamespace string  = "fusion-app-resources"
+	LeftBound        float64 = 116.326949
+	RightBound       float64 = 116.328359
+	UpBound          float64 = 39.993584
+	DownBound        float64 = 39.993086
 )
 
 type Resource struct {
@@ -24,6 +28,12 @@ type Resource struct {
 	Description  map[string]string       `json:"description,omitempty"`
 	ProbeArgs    []string     `json:"probeArgs"`
 	ProbeImage   string       `json:"probeImage"`
+	Position      Position     `json:"position,omitempty"`
+}
+
+type Position struct {
+	Longitude   float64       `json:"longitude,omitempty"`
+	Latitude    float64       `json:"latitude,omitempty"`
 }
 
 type ResourceSpec struct {
@@ -97,25 +107,26 @@ type RefAppInstance struct {
 }
 
 type RefApp struct {
-	UID         string  `json:"uid"`
+	UID         string  `json:"uid,omitempty"`
 	Name        string  `json:"name"`
 }
 
 type AppInstance struct {
-	UID	        string              `json:"uid"`
-	Namespace	string              `json:"namespace"`
+	UID	        string              `json:"uid,omitempty"`
+	Namespace	string              `json:"namespace,omitempty"`
 	Name	    string              `json:"name"`
 	RefApp      RefApp              `json:"refApp"`
-	RefResource	[]AppRefResource    `json:"refResource"`
-	Status	    []fusionappv1alpha1.Action  `json:"status"`
-	StartTime	string              `json:"startTime"`
-	UpdateTime	string              `json:"updateTime"`
-	EndTime	    string              `json:"endTime"`
+	RefResource	[]AppRefResource    `json:"refResource,omitempty"`
+	Status	    []fusionappv1alpha1.Action  `json:"status,omitempty"`
+	CreateTime  string              `json:"createTime,omitempty"`
+	StartTime	string              `json:"startTime,omitempty"`
+	UpdateTime	string              `json:"updateTime,omitempty"`
+	EndTime	    string              `json:"endTime,omitempty"`
 }
 
 type AppInstanceAPICreateBody struct {
 	RefApp      RefApp             `json:"refApp"`
-	//RefResource []AppRefResource   `json:"refResource"`
+	//RefResource []RefResource   `json:"refResource"`
 	UserLabel  map[string]string  `json:"userLabel,omitempty"`
 }
 

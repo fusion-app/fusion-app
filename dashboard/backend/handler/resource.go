@@ -53,6 +53,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 		}
 		resources := []types.Resource{*types.V1alpha1ResourceToResource(resource)}
 		responseJSON(resources, w, http.StatusOK)
+		_ = handler.client.Update(context.TODO(), resource)
 	} else {
 		rsl := &fusionappv1alpha1.ResourceList{}
 		err = handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
@@ -71,6 +72,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 			for _, item := range rsl.Items {
 				if labelSelector.Matches(labels.Set(item.Spec.Labels)) {
 					resources = append(resources, *types.V1alpha1ResourceToResource(&item))
+					_ = handler.client.Update(context.TODO(), &item)
 				}
 			}
 		} else {
@@ -78,6 +80,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 				if (len(resourceAPIQueryBody.Kind) == 0 || string(resource.Spec.ResourceKind) == resourceAPIQueryBody.Kind) &&
 					(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) {
 					resources = append(resources, *types.V1alpha1ResourceToResource(&resource))
+					_ = handler.client.Update(context.TODO(), &resource)
 				}
 			}
 		}

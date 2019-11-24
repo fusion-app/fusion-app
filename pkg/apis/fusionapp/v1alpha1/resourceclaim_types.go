@@ -13,9 +13,17 @@ type ResourceClaimSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	Name       string              `json:"name"`
-	AccessMode ResourceAccessMode  `json:"accessMode"`
-	Selector   []SelectorSpec      `json:"selector"`
+	Name        string             `json:"name"`
+	AccessMode  ResourceAccessMode `json:"accessMode"`
+	Selector    []SelectorSpec     `json:"selector"`
+	RefResource RefResource        `json:"refResource"`
+	RefAppInstance RefAppInstance  `json:"refAppInstance"`
+}
+
+type RefAppInstance struct {
+	UID       string       `json:"uid,omitempty"`
+	Name      string       `json:"name,omitempty"`
+	Namespace string       `json:"namespace,omitempty"`
 }
 
 type SelectorSpec struct {

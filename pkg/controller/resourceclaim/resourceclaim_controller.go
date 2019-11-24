@@ -2,8 +2,11 @@ package resourceclaim
 
 import (
 	"context"
+	"fmt"
 	fusionappv1alpha1 "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -80,7 +83,36 @@ func (r *ReconcileResourceClaim) Reconcile(request reconcile.Request) (reconcile
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
+	rsl := &fusionappv1alpha1.ResourceList{}
+	err = r.client.List(context.TODO(), &client.ListOptions{}, rsl)
+	if err != nil {
+		log.Warningf("failed to list resources", err)
+		return reconcile.Result{}, err
+	}
+	resources := make([]fusionappv1alpha1.Resource, 0)
+	for _, item := range rsl.Items {
+		if !item.Status.Bound {
+			resources = append(resources, item)
+		}
+	}
+	if len(resources) == 0 {
+		return reconcile.Result{}, fmt.Errorf("no resources available currently")
+	}
+	mp := make(labels.Set)
+	for _, selector := range instance.Spec.Selector {
+		mp[selector.Key] = selector.Value
+	}
+	labelSelector := labels.SelectorFromSet(mp)
+	var resource *fusionappv1alpha1.Resource
+	for _, item := range resources {
+		if labelSelector.Matches(labels.Set(item.Spec.Labels)) {
+			resource = &item
+			break
+		}
+	}
+	if resource != nil {
 
+	}
 	return reconcile.Result{}, nil
 }
 

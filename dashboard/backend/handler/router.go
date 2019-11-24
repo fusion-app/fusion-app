@@ -99,11 +99,7 @@ func NewRouter(handler *APIHandler) http.Handler {
 	// Handle static files.
 	router.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(handler.frontDir))))
 
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8000"},
-		AllowCredentials: true,
-		AllowedHeaders:   []string{"Authorization"},
-	})
+	c := cors.Default()
 
 	return c.Handler(router)
 }

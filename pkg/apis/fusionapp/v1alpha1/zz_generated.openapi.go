@@ -129,7 +129,7 @@ func schema_pkg_apis_fusionapp_v1alpha1_FusionAppInstanceSpec(ref common.Referen
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
-										Ref: ref("github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.AppRefResource"),
+										Ref: ref("github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.RefResource"),
 									},
 								},
 							},
@@ -152,7 +152,7 @@ func schema_pkg_apis_fusionapp_v1alpha1_FusionAppInstanceSpec(ref common.Referen
 			},
 		},
 		Dependencies: []string{
-			"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.AppRefResource", "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.RefApp"},
+			"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.RefResource", "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1.RefApp"},
 	}
 }
 

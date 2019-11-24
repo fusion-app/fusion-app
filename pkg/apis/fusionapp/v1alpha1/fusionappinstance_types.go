@@ -14,7 +14,7 @@ type FusionAppInstanceSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	RefApp       RefApp            `json:"refApp,omitempty"`
-	RefResource  []AppRefResource  `json:"refResource,omitempty"`
+	RefResource  []RefResource     `json:"refResource,omitempty"`
 	Labels       map[string]string `json:"labels,omitempty"`
 	ProbeImage   string            `json:"probeImage,omitempty"`
 	ProbeArgs    []string          `json:"probeArgs,omitempty"`
@@ -27,10 +27,10 @@ type RefApp struct {
 	Name   string    `json:"name"`
 }
 
-type AppRefResource struct {
+type RefResource struct {
 	UID	        string    `json:"uid,omitempty"`
 	Namespace	string    `json:"namespace,omitempty"`
-	Kind	    string    `json:"kind"`
+	Kind	    string    `json:"kind,omitempty"`
 	Name	    string    `json:"name"`
 	AliasName   string   `json:"aliasName,omitempty"`
 	Icon        string   `json:"icon,omitempty"`
@@ -43,20 +43,20 @@ type FusionAppInstanceStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	CreateTime *metav1.Time  `json:"createTime,omitempty"`
-	StartTime  *metav1.Time  `json:"startTime,omitempty"`
-	EndTime    *metav1.Time  `json:"endTime,omitempty"`
-	UpdateTime *metav1.Time  `json:"updateTime,omitempty"`
+	CreateTime *metav1.Time  `json:"createTime"`
+	StartTime  *metav1.Time  `json:"startTime"`
+	EndTime    *metav1.Time  `json:"endTime"`
+	UpdateTime *metav1.Time  `json:"updateTime"`
 	Phase      FusionAppInstancePhase `json:"phase"`
-	ProbePhase ProbePhase    `json:"probePhase,omitempty"`
+	ProbePhase ProbePhase    `json:"probePhase"`
 	ActionStatus []Action    `json:"actionStatus"`
 }
 
 
 type Action struct {
-	ActionID    string         `json:"actionID"`
-	RefResource AppRefResource `json:"refResource"`
-	State       ActionState    `json:"state"`
+	ActionID    string      `json:"actionID"`
+	RefResource RefResource `json:"refResource"`
+	State       ActionState `json:"state"`
 }
 
 type ActionState string

@@ -17,7 +17,7 @@ spec:
       containers:
         - name: fusion-app
           # Replace this with the built image name
-          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-watcher:201911212110
+          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-watcher:201911222242
           command:
             - /usr/local/bin/fusionapp-watcher
             - --namespace

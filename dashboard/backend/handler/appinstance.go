@@ -126,7 +126,7 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 					if err := json.Unmarshal(body, &respBody); err == nil {
 						_ = resp.Body.Close()
 						if respBody.Status == 200 {
-							fusionAppInstance.Spec.RefResource = append(fusionAppInstance.Spec.RefResource, fusionappv1alpha1.AppRefResource{
+							fusionAppInstance.Spec.RefResource = append(fusionAppInstance.Spec.RefResource, fusionappv1alpha1.RefResource{
 								Kind: respBody.RespData.SourceDetail.Kind,
 								Name: respBody.RespData.SourceDetail.Name,
 								Namespace: respBody.RespData.SourceDetail.Namespace,
@@ -154,7 +154,7 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 				responseJSON(Message{"No available resources"}, w, http.StatusInternalServerError)
 				return
 			} else {
-				fusionAppInstance.Spec.RefResource = append(fusionAppInstance.Spec.RefResource, fusionappv1alpha1.AppRefResource{
+				fusionAppInstance.Spec.RefResource = append(fusionAppInstance.Spec.RefResource, fusionappv1alpha1.RefResource{
 					Kind: string(resource.Spec.ResourceKind),
 					Name: resource.Name,
 					Namespace: resource.Namespace,
@@ -183,6 +183,14 @@ func (handler *APIHandler) ListAppInstance(w http.ResponseWriter, r *http.Reques
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 		return
 	}
+	asl := new(fusionappv1alpha1.FusionAppInstanceList)
+	err = handler.client.List(context.TODO(), &client.ListOptions{}, asl)
+	if err != nil {
+		log.Warningf("failed to list appInstances", err)
+		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
+	}
+	ass := asl.Items
 	if len(body) != 0 {
 		if err := json.Unmarshal(body, &appInstanceAPIListBody); err != nil {
 			if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
@@ -193,16 +201,13 @@ func (handler *APIHandler) ListAppInstance(w http.ResponseWriter, r *http.Reques
 			return
 		}
 	} else {
-		appInstanceAPIListBody.Limit = 5
-	}
-	asl := new(fusionappv1alpha1.FusionAppInstanceList)
-	err = handler.client.List(context.TODO(), &client.ListOptions{}, asl)
-	if err != nil {
-		log.Warningf("failed to list appInstances", err)
-		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		appInstances := make([]types.AppInstance, len(ass))
+		for i, instance := range ass {
+			appInstances[i] = *types.V1alpha1AppInstanceToAppInstance(&instance)
+		}
+		responseJSON(appInstances, w, http.StatusOK)
 		return
 	}
-	ass := asl.Items
 	if appInstanceAPIListBody.SortBy.Field == "startTime" {
 		if appInstanceAPIListBody.SortBy.Order {
 			sort.SliceStable(ass, func(i, j int) bool { return ass[i].Status.StartTime.Before(ass[j].Status.StartTime)})
@@ -235,4 +240,8 @@ func (handler *APIHandler) ListAppInstance(w http.ResponseWriter, r *http.Reques
 		appInstances = append(appInstances, *types.V1alpha1AppInstanceToAppInstance(&ass[i]))
 	}
 	responseJSON(appInstances, w, http.StatusOK)
+}
+
+func (handler *APIHandler) DeleteAppInstance(w http.ResponseWriter, r *http.Request)  {
+
 }

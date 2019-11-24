@@ -87,8 +87,6 @@ type ReconcileFusionAppInstance struct {
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileFusionAppInstance) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	log.Printf("Reconciling FusionAppInstance")
-
 	// Fetch the FusionAppInstance instance
 	instance := &fusionappv1alpha1.FusionAppInstance{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
@@ -108,25 +106,28 @@ func (r *ReconcileFusionAppInstance) Reconcile(request reconcile.Request) (recon
 	if instance.ObjectMeta.DeletionTimestamp != nil {
 		return reconcile.Result{}, nil
 	}
-	if len(instance.Spec.ProbeImage) == 0 || len(instance.Spec.ProbeArgs) == 0 {
-		app := &fusionappv1alpha1.FusionApp{}
-		err := r.client.Get(context.TODO(),
-			client.ObjectKey{Name: instance.Spec.RefApp.Name, Namespace: instance.Namespace}, app)
-		if err != nil {
-			if errors.IsNotFound(err) {
-				return reconcile.Result{}, nil
+	if instance.Spec.ProbeEnabled {
+		if len(instance.Spec.ProbeImage) == 0 || len(instance.Spec.ProbeArgs) == 0 {
+			app := &fusionappv1alpha1.FusionApp{}
+			err := r.client.Get(context.TODO(),
+				client.ObjectKey{Name: instance.Spec.RefApp.Name}, app)
+			if err != nil {
+				if errors.IsNotFound(err) {
+					log.Printf("can't find referred App")
+					return reconcile.Result{}, nil
+				}
+				// Error reading the object - requeue the request.
+				return reconcile.Result{}, err
 			}
-			// Error reading the object - requeue the request.
-			return reconcile.Result{}, err
-		}
-		instance.Spec.ProbeImage = app.Spec.ProbeImage
-		in, out := &app.Spec.ProbeArgs, &instance.Spec.ProbeArgs
-		*out = make([]string, len(*in))
-		for i := range *in {
-			(*in)[i] = (*out)[i]
+			instance.Spec.ProbeImage = app.Spec.ProbeImage
+			in, out := &app.Spec.ProbeArgs, &instance.Spec.ProbeArgs
+			*out = make([]string, len(*in))
+			for i := range *in {
+				(*in)[i] = (*out)[i]
+			}
 		}
 	}
-	syncers := []syncer.Interface{}
+	var syncers []syncer.Interface
 	if instance.Spec.ProbeEnabled {
 		syncers = append(syncers, NewProbeDeploySyncer(instance, r.client, r.scheme))
 	} else {
@@ -138,8 +139,10 @@ func (r *ReconcileFusionAppInstance) Reconcile(request reconcile.Request) (recon
 			}
 		}
 	}
-	if err := r.sync(syncers); err != nil {
-		return reconcile.Result{}, err
+	if len(syncers) > 0 {
+		if err := r.sync(syncers); err != nil {
+			return reconcile.Result{}, err
+		}
 	}
 	return reconcile.Result{}, r.updateStatus(instance)
 }

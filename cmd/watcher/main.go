@@ -5,6 +5,7 @@ import (
 	fusionappclient "github.com/fusion-app/fusion-app/pkg/client/clientset/versioned"
 	"github.com/fusion-app/fusion-app/pkg/util/k8sutil"
 	"github.com/jcuga/golongpoll"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 
 	"net/http"
@@ -44,8 +45,10 @@ func main() {
 		log.Fatalf("Failed to create manager: %q", err)
 	}
 	p := ":" + strconv.Itoa(listenPort)
-	http.HandleFunc("/events", manager.SubscriptionHandler)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/events", manager.SubscriptionHandler)
 	go watchResourcesHandler(manager, clientset, ns)
 	go watchAppInstanceHandler(manager, clientset, ns)
-	_ = http.ListenAndServe(p, nil)
+	handler := cors.Default().Handler(mux)
+	_ = http.ListenAndServe(p, handler)
 }

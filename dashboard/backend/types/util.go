@@ -2,6 +2,8 @@ package types
 
 import (
 	"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
+	"math/rand"
+	"strconv"
 )
 
 func V1alpha1ResourceToResource(rs *v1alpha1.Resource) *Resource {
@@ -41,6 +43,31 @@ func V1alpha1ResourceToResource(rs *v1alpha1.Resource) *Resource {
 		for key, val := range *in {
 			(*out)[key] = val
 		}
+	}
+	if rs.Labels == nil {
+		rs.Labels = make(map[string]string)
+	}
+	if longitudeString, ok := rs.Labels["longitude"]; ok {
+		longitude, err := strconv.ParseFloat(longitudeString, 64)
+		if err != nil {
+			resource.Position.Longitude = rand.Float64()*(RightBound - LeftBound) + LeftBound
+		} else {
+			resource.Position.Longitude = longitude
+		}
+	} else {
+		resource.Position.Longitude = rand.Float64()*(RightBound - LeftBound) + LeftBound
+		rs.Labels["longitude"] = strconv.FormatFloat(resource.Position.Longitude, 'f', -1, 64)
+	}
+	if latitudeString, ok := rs.Labels["latitude"]; ok {
+		latitude, err := strconv.ParseFloat(latitudeString, 64)
+		if err != nil {
+			resource.Position.Latitude = rand.Float64()*(UpBound - DownBound) + DownBound
+		} else {
+			resource.Position.Latitude = latitude
+		}
+	} else {
+		resource.Position.Latitude = rand.Float64()*(UpBound - DownBound) + DownBound
+		rs.Labels["latitude"] = strconv.FormatFloat(resource.Position.Latitude, 'f', -1, 64)
 	}
 	return resource
 }
@@ -218,6 +245,9 @@ func V1alpha1AppInstanceToAppInstance(fusionAppInstance *v1alpha1.FusionAppInsta
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
+	}
+	if fusionAppInstance.Status.CreateTime != nil {
+		appInstance.CreateTime = fusionAppInstance.Status.CreateTime.String()
 	}
 	if fusionAppInstance.Status.StartTime != nil {
 		appInstance.StartTime = fusionAppInstance.Status.StartTime.String()
