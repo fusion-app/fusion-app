@@ -81,6 +81,12 @@ func NewRouter(handler *APIHandler) http.Handler {
 			handler.CreateAppInstance,
 		},
 		{
+			"DeleteAppInstance",
+			"DELETE",
+			"/apis/app_instance",
+			handler.DeleteAppInstance,
+		},
+		{
 			"ListAppInstance",
 			"GET",
 			"/apis/app_instances",

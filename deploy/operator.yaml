@@ -17,10 +17,14 @@ spec:
       containers:
         - name: fusion-app
           # Replace this with the built image name
-          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app:201911241623
+          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-operator:201911251306
           command:
           - /usr/local/bin/fusionapp-operator
           imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 1Gi
           env:
             - name: WATCH_NAMESPACE
               valueFrom:

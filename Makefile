@@ -1,9 +1,13 @@
-DOCKER_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app:201911241623
-CONSUMER_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/consumer:201911212110
-WATCHER_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-watcher:201911222242
+BACKEND_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-backend:201911251306
+OPERATOR_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-operator:201911251306
+CONSUMER_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-consumer:201911251306
+WATCHER_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-watcher:201911251306
 
-image:
-	docker build -t $(DOCKER_IMAGE) -f build/Dockerfile .
+backend:
+	docker build -t $(BACKEND_IMAGE) -f build/Dockerfile.backend .
+
+operator:
+	docker build -t $(OPERATOR_IMAGE) -f build/Dockerfile.operator .
 
 consumer:
 	docker build -t $(CONSUMER_IMAGE) -f build/Dockerfile.subscriber .
@@ -12,6 +16,7 @@ watcher:
 	docker build -t $(WATCHER_IMAGE) -f build/Dockerfile.watcher .
 
 push:
-	docker push $(DOCKER_IMAGE)
+	docker push $(BACKEND_IMAGE)
+	docker push $(OPERATOR_IMAGE)
 	docker push $(CONSUMER_IMAGE)
 	docker push $(WATCHER_IMAGE)

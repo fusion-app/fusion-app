@@ -96,5 +96,5 @@ func responseJSON(body interface{}, w http.ResponseWriter, statusCode int) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	w.Write(jsonResponse)
+	_, _ = w.Write(jsonResponse)
 }

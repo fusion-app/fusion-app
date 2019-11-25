@@ -72,7 +72,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 			for _, item := range rsl.Items {
 				if labelSelector.Matches(labels.Set(item.Spec.Labels)) {
 					resources = append(resources, *types.V1alpha1ResourceToResource(&item))
-					_ = handler.client.Update(context.TODO(), &item)
+					go handler.client.Update(context.TODO(), item.DeepCopy())
 				}
 			}
 		} else {
@@ -80,7 +80,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 				if (len(resourceAPIQueryBody.Kind) == 0 || string(resource.Spec.ResourceKind) == resourceAPIQueryBody.Kind) &&
 					(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) {
 					resources = append(resources, *types.V1alpha1ResourceToResource(&resource))
-					_ = handler.client.Update(context.TODO(), &resource)
+					go handler.client.Update(context.TODO(), resource.DeepCopy())
 				}
 			}
 		}
@@ -162,7 +162,7 @@ func (handler *APIHandler) UpdateResource(w http.ResponseWriter, r *http.Request
 	types.UpdateResourceWithResourceSpec(resource, &resourceAPIPutBody.ResourceSpec)
 	err = handler.client.Update(context.TODO(), resource)
 	if err != nil {
-		log.Warningf("Failed to create workspace %v: %v", resource.Name, err)
+		log.Warningf("Failed to Update resource %v: %v", resource.Name, err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 	} else {
 		responseJSON(resource, w, http.StatusOK)

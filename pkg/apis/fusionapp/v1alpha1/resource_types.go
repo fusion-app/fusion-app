@@ -26,9 +26,10 @@ type ResourceSpec struct {
 }
 
 type ResourceOperationSpec struct {
-	Name       string         `json:"name"`
-	Price      float64        `json:"price"`
-	HTTPAction HTTPActionSpec `json:"httpAction,omitempty"`
+	Name        string         `json:"name"`
+	Price       float64        `json:"price"`
+	Description string         `json:"description"`
+	HTTPAction  HTTPActionSpec `json:"httpAction,omitempty"`
 }
 
 type HTTPActionSpec struct {

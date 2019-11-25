@@ -17,7 +17,7 @@ spec:
       containers:
         - name: fusion-app
           # Replace this with the built image name
-          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app:201911241623
+          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-backend:201911251306
           command:
             - /usr/local/bin/fusionapp-dashboard
           imagePullPolicy: Always
@@ -25,6 +25,13 @@ spec:
             - containerPort: 8080
               name: http
               protocol: TCP
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
           env:
             - name: WATCH_NAMESPACE
               valueFrom:

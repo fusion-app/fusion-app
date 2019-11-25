@@ -231,7 +231,7 @@ func V1alpha1AppInstanceToAppInstance(fusionAppInstance *v1alpha1.FusionAppInsta
 	appInstance.RefApp.Name = fusionAppInstance.Spec.RefApp.Name
 	appInstance.RefApp.UID = fusionAppInstance.Spec.RefApp.UID
 	if fusionAppInstance.Spec.RefResource != nil {
-		appInstance.RefResource = make([]AppRefResource, len(fusionAppInstance.Spec.RefResource))
+		appInstance.RefResource = make([]v1alpha1.RefResource, len(fusionAppInstance.Spec.RefResource))
 		for i, refResource := range fusionAppInstance.Spec.RefResource {
 			appInstance.RefResource[i].UID = refResource.UID
 			appInstance.RefResource[i].Name = refResource.Name

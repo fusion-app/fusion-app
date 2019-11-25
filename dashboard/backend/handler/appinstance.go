@@ -243,5 +243,39 @@ func (handler *APIHandler) ListAppInstance(w http.ResponseWriter, r *http.Reques
 }
 
 func (handler *APIHandler) DeleteAppInstance(w http.ResponseWriter, r *http.Request)  {
+	appInstanceAPIDeleteBody := new(types.AppInstanceAPIDeleteBody)
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	defer r.Body.Close()
+	if err != nil {
+		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
+	}
 
+	if err := json.Unmarshal(body, &appInstanceAPIDeleteBody); err != nil {
+		if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
+			responseJSON(Message{nerr.Error()}, w, http.StatusUnprocessableEntity)
+		} else {
+			responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
+		}
+		return
+	}
+	refAppInstance := appInstanceAPIDeleteBody.RefAppInstance
+	name := refAppInstance.Name
+	namespace := refAppInstance.Namespace
+	if len(namespace) == 0 {
+		namespace = handler.resourcesNamespace
+	}
+	fusionAppInstance := &fusionappv1alpha1.FusionAppInstance{}
+	fusionAppInstance.Name = name
+	fusionAppInstance.Namespace = namespace
+	err = handler.client.Delete(context.TODO(), fusionAppInstance)
+	if errors.IsNotFound(err) {
+		err := fmt.Errorf("appinstance \"%s\" not exists", name)
+		responseJSON(Message{err.Error()}, w, http.StatusNotFound)
+		return
+	} else if err != nil {
+		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
+	}
+	responseJSON("deleted", w, http.StatusOK)
 }

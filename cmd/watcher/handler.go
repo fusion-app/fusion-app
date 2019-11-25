@@ -40,7 +40,7 @@ func watchResourcesHandler(manager *golongpoll.LongpollManager, clientset *fusio
 						handled = false
 					default:
 						data, _ := json.Marshal(&ResourceMessage{Type: event.Type, Resource: *types.V1alpha1ResourceToResource(resource)})
-						_, _ = clientset.FusionappV1alpha1().Resources(ns).Update(resource)
+						go clientset.FusionappV1alpha1().Resources(ns).Update(resource.DeepCopy())
 						if originalCount <= 0 {
 							_ = manager.Publish("resources", string(data))
 						} else {

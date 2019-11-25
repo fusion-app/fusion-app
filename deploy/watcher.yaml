@@ -17,7 +17,7 @@ spec:
       containers:
         - name: fusion-app
           # Replace this with the built image name
-          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-watcher:201911222242
+          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-watcher:201911251306
           command:
             - /usr/local/bin/fusionapp-watcher
             - --namespace
@@ -27,6 +27,10 @@ spec:
             - containerPort: 8081
               name: socket
               protocol: TCP
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
           env:
             - name: POD_NAME
               valueFrom:
