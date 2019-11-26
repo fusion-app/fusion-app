@@ -38,3 +38,7 @@ spec:
               value: "fusion-app"
             - name: MQ_ADRESS
               value: "221.228.66.83:30595"
+            - name: RESOURCE_PROBE_ENABLED
+              value: "false"
+            - name: APPINSTANCE_PROBE_ENABLED
+              value: "true"

@@ -51,9 +51,12 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 			responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 			return
 		}
-		resources := []types.Resource{*types.V1alpha1ResourceToResource(resource)}
+		rs, modified := types.V1alpha1ResourceToResource(resource)
+		resources := []types.Resource{*rs}
 		responseJSON(resources, w, http.StatusOK)
-		_ = handler.client.Update(context.TODO(), resource)
+		if modified {
+			_ = handler.client.Update(context.TODO(), resource)
+		}
 	} else {
 		rsl := &fusionappv1alpha1.ResourceList{}
 		err = handler.client.List(context.TODO(), &client.ListOptions{}, rsl)
@@ -63,6 +66,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 			return
 		}
 		resources := make([]types.Resource, 0)
+		rss := make([]fusionappv1alpha1.Resource, 0)
 		if resourceAPIQueryBody.LabelSelector != nil && len(resourceAPIQueryBody.LabelSelector) > 0 {
 			mp := make(labels.Set)
 			for _, selector := range resourceAPIQueryBody.LabelSelector {
@@ -71,20 +75,29 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 			labelSelector := labels.SelectorFromSet(mp)
 			for _, item := range rsl.Items {
 				if labelSelector.Matches(labels.Set(item.Spec.Labels)) {
-					resources = append(resources, *types.V1alpha1ResourceToResource(&item))
-					go handler.client.Update(context.TODO(), item.DeepCopy())
+					rs, modified := types.V1alpha1ResourceToResource(&item)
+					resources = append(resources, *rs)
+					if modified {
+						rss = append(rss, item)
+					}
 				}
 			}
 		} else {
 			for _, resource := range rsl.Items {
 				if (len(resourceAPIQueryBody.Kind) == 0 || string(resource.Spec.ResourceKind) == resourceAPIQueryBody.Kind) &&
 					(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) {
-					resources = append(resources, *types.V1alpha1ResourceToResource(&resource))
-					go handler.client.Update(context.TODO(), resource.DeepCopy())
+					rs, modified := types.V1alpha1ResourceToResource(&resource)
+					resources = append(resources, *rs)
+					if modified {
+						rss = append(rss, resource)
+					}
 				}
 			}
 		}
 		responseJSON(resources, w, http.StatusOK)
+		for _, rs := range rss {
+			_ = handler.client.Update(context.TODO(), &rs)
+		}
 	}
 }
 

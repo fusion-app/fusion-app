@@ -120,6 +120,16 @@ type AppInstanceAPIQueryBody struct{
 	RefAppInstance RefAppInstance  `json:"refAppInstance"`
 }
 
+type AppInstanceAPIPutBody struct {
+	RefAppInstance  RefAppInstance  `json:"refAppInstance"`
+	AppInstanceSpec AppinstanceSpec `json:"appInstanceSpec"`
+}
+
+type AppinstanceSpec struct {
+	ProbeEnabled  bool               `json:"probeEnabled"`
+	Labels        map[string]string  `json:"labels,omitempty"`
+}
+
 type AppInstanceAPIDeleteBody struct{
 	RefAppInstance RefAppInstance  `json:"refAppInstance"`
 }

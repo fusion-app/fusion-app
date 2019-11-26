@@ -39,12 +39,15 @@ func watchResourcesHandler(manager *golongpoll.LongpollManager, clientset *fusio
 						log.Printf("watcher error encountered\n", resource.GetName())
 						handled = false
 					default:
-						data, _ := json.Marshal(&ResourceMessage{Type: event.Type, Resource: *types.V1alpha1ResourceToResource(resource)})
-						go clientset.FusionappV1alpha1().Resources(ns).Update(resource.DeepCopy())
+						rs, modified := types.V1alpha1ResourceToResource(resource)
+						data, _ := json.Marshal(&ResourceMessage{Type: event.Type, Resource: *rs})
 						if originalCount <= 0 {
 							_ = manager.Publish("resources", string(data))
 						} else {
 							originalCount --
+						}
+						if modified {
+							go clientset.FusionappV1alpha1().Resources(ns).Update(resource.DeepCopy())
 						}
 					}
 				}

@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
+	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -108,8 +109,9 @@ func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Resu
 	if instance.ObjectMeta.DeletionTimestamp != nil {
 		return reconcile.Result{}, nil
 	}
+	probeEnabled := os.Getenv("RESOURCE_PROBE_ENABLED")
 	syncers := []syncer.Interface{}
-	if instance.Spec.ProbeEnabled {
+	if instance.Spec.ProbeEnabled || probeEnabled == "true"{
 		syncers = append(syncers, NewProbeDeploySyncer(instance, r.client, r.scheme))
 	} else {
 		deploy := &appsv1.Deployment{}

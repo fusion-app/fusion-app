@@ -17,6 +17,8 @@ const (
 	defaultMqAddress       = "221.228.66.83:30595"    // "114.212.87.225:32015"
 
 	EnvMqAdress            = "MQ_ADRESS"
+
+	httpURL               = "https://www.cpss2019.fun:5001/get_app_instance_action_state_and_resource_by_uid"
 )
 
 // newDeployForProbe returns a probe deployment with the same name/namespace as the cr
@@ -30,7 +32,8 @@ func newDeployForProbe(appInstance *v1alpha1.FusionAppInstance) *appsv1.Deployme
 		mqAddress = defaultMqAddress
 	}
 	args := []string{"--mq-address", mqAddress, "--mq-topic", topic, "--crd-namespace",
-		appInstance.Namespace, "--crd-name", appInstance.Name, "--crd-kind", appInstance.Kind}
+		appInstance.Namespace, "--crd-name", appInstance.Name, "--crd-kind", appInstance.Kind,
+		"--crd-uid", string(appInstance.UID), "--http-url", httpURL}
 	args = append(args, appInstance.Spec.ProbeArgs...)
 	return &appsv1.Deployment {
 		ObjectMeta: metav1.ObjectMeta{

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
 	"github.com/fusion-app/fusion-app/pkg/controller/internal"
-	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -15,12 +14,12 @@ func (r *ReconcileFusionAppInstance) updateStatus(appInstance *v1alpha1.FusionAp
 	if appInstance.Status.CreateTime == nil {
 		now := metav1.Now()
 		appInstance.Status.CreateTime = &now
-		log.Printf("appInstance %s is created at %s", appInstance.Name, appInstance.Status.CreateTime.String())
 	}
-	now := metav1.Now()
-	appInstance.Status.UpdateTime = &now
+	if appInstance.Status.UpdateTime == nil {
+		now := metav1.Now()
+		appInstance.Status.UpdateTime = &now
+	}
 	labels := DefaultLabels(appInstance)
-
 	pods, err := internal.PodsForLabels(appInstance.Namespace, labels, r.client)
 	if err != nil {
 		return err

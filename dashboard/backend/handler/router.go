@@ -92,6 +92,12 @@ func NewRouter(handler *APIHandler) http.Handler {
 			"/apis/app_instances",
 			handler.ListAppInstance,
 		},
+		{
+			"UpdateAppInstance",
+			"PUT",
+			"/apis/app_instance",
+			handler.UpdateAppInstance,
+		},
 	}
 
 	// The public route is always accessible

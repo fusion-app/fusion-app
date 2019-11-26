@@ -45,16 +45,17 @@ type FusionAppInstanceStatus struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	CreateTime *metav1.Time  `json:"createTime"`
 	StartTime  *metav1.Time  `json:"startTime"`
-	EndTime    *metav1.Time  `json:"endTime"`
+	EndTime    *metav1.Time  `json:"endTime,omitempty"`
 	UpdateTime *metav1.Time  `json:"updateTime"`
 	Phase      FusionAppInstancePhase `json:"phase"`
 	ProbePhase ProbePhase    `json:"probePhase"`
-	ActionStatus []Action    `json:"actionStatus"`
+	ActionStatus []Action    `json:"actionStatus,omitempty"`
 }
 
 
 type Action struct {
 	ActionID    string      `json:"actionID"`
+	ActionName  string      `json:"actionName"`
 	RefResource RefResource `json:"refResource"`
 	State       ActionState `json:"state"`
 }

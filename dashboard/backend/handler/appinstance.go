@@ -242,7 +242,57 @@ func (handler *APIHandler) ListAppInstance(w http.ResponseWriter, r *http.Reques
 	responseJSON(appInstances, w, http.StatusOK)
 }
 
-func (handler *APIHandler) DeleteAppInstance(w http.ResponseWriter, r *http.Request)  {
+func (handler *APIHandler) UpdateAppInstance(w http.ResponseWriter, r *http.Request) {
+	appInstanceAPIPutBody := new(types.AppInstanceAPIPutBody)
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	defer r.Body.Close()
+	if err != nil {
+		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.Unmarshal(body, &appInstanceAPIPutBody); err != nil {
+		if nerr := json.NewEncoder(w).Encode(err); nerr != nil {
+			responseJSON(Message{nerr.Error()}, w, http.StatusUnprocessableEntity)
+		} else {
+			responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
+		}
+		return
+	}
+	name := appInstanceAPIPutBody.RefAppInstance.Name
+	namespace := appInstanceAPIPutBody.RefAppInstance.Namespace
+	if len(namespace) == 0 {
+		namespace = handler.resourcesNamespace
+	}
+	appInstance := new(fusionappv1alpha1.FusionAppInstance)
+	err = handler.client.Get(context.TODO(), client.ObjectKey{Namespace: namespace,
+		Name: name}, appInstance)
+	if errors.IsNotFound(err) {
+		err := fmt.Errorf("appInstance \"%s\" not exists", name)
+		responseJSON(Message{err.Error()}, w, http.StatusNotFound)
+		return
+	} else if err != nil {
+		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+		return
+	}
+	appInstance.Spec.ProbeEnabled = appInstanceAPIPutBody.AppInstanceSpec.ProbeEnabled
+	if appInstanceAPIPutBody.AppInstanceSpec.Labels != nil {
+		in, out := &appInstanceAPIPutBody.AppInstanceSpec.Labels, &appInstance.Spec.Labels
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
+	err = handler.client.Update(context.TODO(), appInstance)
+	if err != nil {
+		log.Warningf("Failed to Update appInstance %v: %v", appInstance.Name, err)
+		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
+	} else {
+		responseJSON("updated", w, http.StatusOK)
+	}
+}
+
+func (handler *APIHandler) DeleteAppInstance(w http.ResponseWriter, r *http.Request) {
 	appInstanceAPIDeleteBody := new(types.AppInstanceAPIDeleteBody)
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	defer r.Body.Close()

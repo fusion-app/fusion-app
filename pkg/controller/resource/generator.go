@@ -30,7 +30,8 @@ func newDeployForProbe(resource *fusionappv1alpha1.Resource) *appsv1.Deployment 
 		mqAddress = defaultMqAddress
 	}
 	args := []string{"--mq-address", mqAddress, "--mq-topic", topic, "--crd-namespace",
-		resource.Namespace, "--crd-name", resource.Name, "--crd-kind", resource.Kind}
+		resource.Namespace, "--crd-name", resource.Name, "--crd-kind", resource.Kind,
+		"--crd-uid", string(resource.UID)}
 	args = append(args, resource.Spec.ProbeArgs...)
 	return &appsv1.Deployment {
 		ObjectMeta: metav1.ObjectMeta{

@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
+	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -106,7 +107,8 @@ func (r *ReconcileFusionAppInstance) Reconcile(request reconcile.Request) (recon
 	if instance.ObjectMeta.DeletionTimestamp != nil {
 		return reconcile.Result{}, nil
 	}
-	if instance.Spec.ProbeEnabled {
+	probeEnabled := os.Getenv("APPINSTANCE_PROBE_ENABLED")
+	if instance.Spec.ProbeEnabled || probeEnabled == "true" {
 		if len(instance.Spec.ProbeImage) == 0 || len(instance.Spec.ProbeArgs) == 0 {
 			app := &fusionappv1alpha1.FusionApp{}
 			err := r.client.Get(context.TODO(),
@@ -128,7 +130,7 @@ func (r *ReconcileFusionAppInstance) Reconcile(request reconcile.Request) (recon
 		}
 	}
 	var syncers []syncer.Interface
-	if instance.Spec.ProbeEnabled {
+	if instance.Spec.ProbeEnabled || probeEnabled == "true" {
 		syncers = append(syncers, NewProbeDeploySyncer(instance, r.client, r.scheme))
 	} else {
 		deploy := &appsv1.Deployment{}
