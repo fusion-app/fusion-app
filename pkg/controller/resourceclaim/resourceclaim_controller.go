@@ -105,13 +105,20 @@ func (r *ReconcileResourceClaim) Reconcile(request reconcile.Request) (reconcile
 	labelSelector := labels.SelectorFromSet(mp)
 	var resource *fusionappv1alpha1.Resource
 	for _, item := range resources {
-		if labelSelector.Matches(labels.Set(item.Spec.Labels)) {
+		if (item.Status.Bound == false || item.Spec.AccessMode == fusionappv1alpha1.ResourceAccessModeShared) && labelSelector.Matches(labels.Set(item.Spec.Labels)) {
 			resource = &item
 			break
 		}
 	}
-	if resource != nil {
-
+	if resource == nil {
+		return reconcile.Result{}, fmt.Errorf("no suitable resources available currently")
+	}
+	if resource.Status.Bound == false {
+		resource.Status.Bound = true
+		err = r.client.Update(context.TODO(), resource)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
 	}
 	return reconcile.Result{}, nil
 }

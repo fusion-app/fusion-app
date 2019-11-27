@@ -105,6 +105,20 @@ func (r *ReconcileFusionAppInstance) Reconcile(request reconcile.Request) (recon
 	log.Printf("Reconciling FusionAppInstance %s", instance.Name)
 	// if the resource is terminating, stop reconcile
 	if instance.ObjectMeta.DeletionTimestamp != nil {
+		for _, refResource := range instance.Spec.RefResource {
+			rs := &fusionappv1alpha1.Resource{}
+			err := r.client.Get(context.TODO(), client.ObjectKey{Name: refResource.Name, Namespace: refResource.Namespace}, rs)
+			if err != nil && !errors.IsNotFound(err) {
+				return reconcile.Result{}, err
+			}
+			if rs.Status.Bound  {
+				rs.Status.Bound = false
+				err := r.client.Update(context.TODO(), rs)
+				if err != nil && !errors.IsNotFound(err) {
+					return reconcile.Result{}, err
+				}
+			}
+		}
 		return reconcile.Result{}, nil
 	}
 	probeEnabled := os.Getenv("APPINSTANCE_PROBE_ENABLED")

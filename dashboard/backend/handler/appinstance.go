@@ -136,6 +136,9 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 								Description: respBody.RespData.SourceDetail.Description,
 							})
 							continue
+						} else if respBody.Status == 201 {
+							responseJSON(body, w, http.StatusCreated)
+							return
 						}
 					} else {
 						_ = resp.Body.Close()
@@ -145,7 +148,7 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 			labelSelector := labels.SelectorFromSet(mp)
 			var resource *fusionappv1alpha1.Resource
 			for _, item := range resources {
-				if labelSelector.Matches(labels.Set(item.Spec.Labels)) {
+				if (item.Status.Bound == false || item.Spec.AccessMode == fusionappv1alpha1.ResourceAccessModeShared) && labelSelector.Matches(labels.Set(item.Spec.Labels)) {
 					resource = &item
 					break
 				}

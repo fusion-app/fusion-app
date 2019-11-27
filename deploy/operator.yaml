@@ -42,3 +42,5 @@ spec:
               value: "false"
             - name: APPINSTANCE_PROBE_ENABLED
               value: "true"
+            - name: APPINSTANCE_HTTP_URL
+              value: "https://app-engine.2018yfb1004800.cn:30081/get_app_instance_action_state_and_resource_by_uid"

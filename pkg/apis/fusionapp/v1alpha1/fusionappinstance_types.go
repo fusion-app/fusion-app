@@ -56,7 +56,7 @@ type FusionAppInstanceStatus struct {
 type Action struct {
 	ActionID    string      `json:"actionID"`
 	ActionName  string      `json:"actionName"`
-	RefResource RefResource `json:"refResource"`
+	RefResource RefResource `json:"refResource,omitempty"`
 	State       ActionState `json:"state"`
 }
 

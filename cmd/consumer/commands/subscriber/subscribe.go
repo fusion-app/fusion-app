@@ -168,7 +168,7 @@ func subscribeTopic(topic string, broker string, group string) error {
 				}
 				if modifiedStatus != nil {
 					newStatus := v1alpha1.ResourceStatus{}
-					err := json.Unmarshal(modifiedLables, &newStatus)
+					err := json.Unmarshal(modifiedStatus, &newStatus)
 					if err != nil {
 						log.Printf("Failed to modify Status: %v", err)
 						continue
@@ -198,7 +198,7 @@ func subscribeTopic(topic string, broker string, group string) error {
 				}
 				if modifiedStatus != nil {
 					newStatus := v1alpha1.FusionAppStatus{}
-					err := json.Unmarshal(modifiedLables, &newStatus)
+					err := json.Unmarshal(modifiedStatus, &newStatus)
 					if err != nil {
 						log.Printf("Failed to modify Status: %v", err)
 						continue
@@ -228,7 +228,7 @@ func subscribeTopic(topic string, broker string, group string) error {
 				}
 				if modifiedStatus != nil {
 					newStatus := v1alpha1.FusionAppInstanceStatus{}
-					err := json.Unmarshal(modifiedLables, &newStatus)
+					err := json.Unmarshal(modifiedStatus, &newStatus)
 					if err != nil {
 						log.Printf("Failed to modify Status: %v", err)
 						continue

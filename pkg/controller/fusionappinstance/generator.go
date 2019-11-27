@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultProbeImage      = "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:instance-prober.201911211332"
+	defaultProbeImage      = "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:instance-prober.201911261805"
 
 	topic                  = "resource-event-source"
 
@@ -18,7 +18,9 @@ const (
 
 	EnvMqAdress            = "MQ_ADRESS"
 
-	httpURL               = "https://www.cpss2019.fun:5001/get_app_instance_action_state_and_resource_by_uid"
+	EnvAppInstanceHttpURL  = "APPINSTANCE_HTTP_URL"
+
+	defaultHttpURL         = "https://www.cpss2019.fun:5001/get_app_instance_action_state_and_resource_by_uid"
 )
 
 // newDeployForProbe returns a probe deployment with the same name/namespace as the cr
@@ -30,6 +32,10 @@ func newDeployForProbe(appInstance *v1alpha1.FusionAppInstance) *appsv1.Deployme
 	mqAddress := os.Getenv(EnvMqAdress)
 	if len(mqAddress) == 0 {
 		mqAddress = defaultMqAddress
+	}
+	httpURL := os.Getenv(EnvAppInstanceHttpURL)
+	if len(httpURL) == 0 {
+		httpURL = defaultHttpURL
 	}
 	args := []string{"--mq-address", mqAddress, "--mq-topic", topic, "--crd-namespace",
 		appInstance.Namespace, "--crd-name", appInstance.Name, "--crd-kind", appInstance.Kind,
