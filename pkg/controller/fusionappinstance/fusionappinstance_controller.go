@@ -54,6 +54,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	subResources := []runtime.Object{
 		&corev1.Pod{},
 		&appsv1.Deployment{},
+		&fusionappv1alpha1.ResourceClaim{},
 	}
 
 	// Watch for changes to secondary resource Pods and requeue the owner Resource
@@ -103,7 +104,7 @@ func (r *ReconcileFusionAppInstance) Reconcile(request reconcile.Request) (recon
 	}
 
 	log.Printf("Reconciling FusionAppInstance %s", instance.Name)
-	// if the resource is terminating, stop reconcile
+	// if the resource is terminating, ubound resources and stop reconcile
 	if instance.ObjectMeta.DeletionTimestamp != nil {
 		for _, refResource := range instance.Spec.RefResource {
 			rs := &fusionappv1alpha1.Resource{}
@@ -111,11 +112,13 @@ func (r *ReconcileFusionAppInstance) Reconcile(request reconcile.Request) (recon
 			if err != nil && !errors.IsNotFound(err) {
 				return reconcile.Result{}, err
 			}
-			if rs.Status.Bound  {
-				rs.Status.Bound = false
-				err := r.client.Update(context.TODO(), rs)
-				if err != nil && !errors.IsNotFound(err) {
-					return reconcile.Result{}, err
+			if err == nil {
+				if rs.Status.Bound  {
+					rs.Status.Bound = false
+					err := r.client.Update(context.TODO(), rs)
+					if err != nil && !errors.IsNotFound(err) {
+						return reconcile.Result{}, err
+					}
 				}
 			}
 		}

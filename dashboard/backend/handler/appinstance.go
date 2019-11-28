@@ -77,8 +77,7 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 	fusionAppInstance.Name = appInstanceAPICreateBody.RefApp.Name + util.RandRunes(8)
 	fusionAppInstance.Spec.RefApp.Name = appInstanceAPICreateBody.RefApp.Name
 	app := new(fusionappv1alpha1.FusionApp)
-	err = handler.client.Get(context.TODO(), client.ObjectKey{Name: appInstanceAPICreateBody.RefApp.Name, Namespace:
-		handler.resourcesNamespace}, app)
+	err = handler.client.Get(context.TODO(), client.ObjectKey{Name: appInstanceAPICreateBody.RefApp.Name}, app)
 	if errors.IsNotFound(err) {
 		log.Warningf("failed to get fusionApp %v: %v", appInstanceAPICreateBody.RefApp.Name, err)
 		responseJSON(Message{err.Error()}, w, http.StatusBadRequest)
@@ -106,6 +105,7 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 		responseJSON(Message{"No available resources"}, w, http.StatusInternalServerError)
 		return
 	}
+	httpCreated := false
 	if app.Spec.ResourceClaim != nil {
 		for _, resourceClaim := range app.Spec.ResourceClaim {
 			mp := make(labels.Set)
@@ -137,8 +137,17 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 							})
 							continue
 						} else if respBody.Status == 201 {
-							responseJSON(body, w, http.StatusCreated)
-							return
+							fusionAppInstance.Spec.RefResource = append(fusionAppInstance.Spec.RefResource, fusionappv1alpha1.RefResource{
+								Kind: respBody.RespData.SourceDetail.Kind,
+								Name: respBody.RespData.SourceDetail.Name,
+								Namespace: respBody.RespData.SourceDetail.Namespace,
+								UID: respBody.RespData.SourceDetail.UID,
+								AliasName: respBody.RespData.SourceDetail.AliasName,
+								Icon: respBody.RespData.SourceDetail.Icon,
+								Description: respBody.RespData.SourceDetail.Description,
+							})
+							httpCreated = true
+							continue
 						}
 					} else {
 						_ = resp.Body.Close()
@@ -174,7 +183,11 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 		log.Warningf("failed to create fusionAppInstance %v: %v", fusionAppInstance.Name, err)
 		responseJSON(Message{err.Error()}, w, http.StatusInternalServerError)
 	} else {
-		responseJSON(fusionAppInstance, w, http.StatusOK)
+		if httpCreated {
+			responseJSON(fusionAppInstance, w, http.StatusCreated)
+		} else {
+			responseJSON(fusionAppInstance, w, http.StatusOK)
+		}
 	}
 }
 
