@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultProbeImage      = "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:instance-prober.201911291336"
+	defaultProbeImage      = "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:instance-prober.201911291358"
 
 	topic                  = "resource-event-source"
 
