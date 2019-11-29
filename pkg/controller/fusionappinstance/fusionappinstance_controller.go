@@ -8,6 +8,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"os"
@@ -156,6 +157,31 @@ func (r *ReconcileFusionAppInstance) Reconcile(request reconcile.Request) (recon
 			if err := r.client.Delete(context.TODO(), deploy); err != nil {
 				return reconcile.Result{}, err
 			}
+		}
+	}
+	app := new(fusionappv1alpha1.FusionApp)
+	err = r.client.Get(context.TODO(), client.ObjectKey{Name: instance.Spec.RefApp.Name}, app)
+	if errors.IsNotFound(err) {
+		log.Warningf("failed to get fusionApp %v: %v", instance.Spec.RefApp.Name, err)
+	} else if err != nil {
+		return reconcile.Result{}, err
+	} else {
+		if len(instance.Spec.RefResource) == len(app.Spec.ResourceClaim) {
+			instance.Status.Phase = fusionappv1alpha1.FusionAppInstancePhaseReady
+		} else {
+			instance.Status.Phase = fusionappv1alpha1.FusionAppInstancePhaseNotReady
+		}
+	}
+	if app.Spec.ResourceClaim != nil {
+		for _, resourceClaim := range app.Spec.ResourceClaim {
+			mp := make(labels.Set)
+			for _, selector := range resourceClaim.Selector {
+				mp[selector.Key] = selector.Value
+			}
+			if mp.Has("io.fusionapp.smarthome/type") {
+				continue
+			}
+			syncers = append(syncers, NewResourceClaimSyncer(instance, &resourceClaim, r.client, r.scheme))
 		}
 	}
 	if len(syncers) > 0 {

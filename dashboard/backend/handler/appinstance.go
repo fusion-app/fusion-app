@@ -147,34 +147,11 @@ func (handler *APIHandler) CreateAppInstance(w http.ResponseWriter, r *http.Requ
 								Description: respBody.RespData.SourceDetail.Description,
 							})
 							httpCreated = true
-							continue
 						}
 					} else {
 						_ = resp.Body.Close()
 					}
 				}
-			}
-			labelSelector := labels.SelectorFromSet(mp)
-			var resource *fusionappv1alpha1.Resource
-			for _, item := range resources {
-				if (item.Status.Bound == false || item.Spec.AccessMode == fusionappv1alpha1.ResourceAccessModeShared) && labelSelector.Matches(labels.Set(item.Spec.Labels)) {
-					resource = &item
-					break
-				}
-			}
-			if resource == nil {
-				responseJSON(Message{"No available resources"}, w, http.StatusInternalServerError)
-				return
-			} else {
-				fusionAppInstance.Spec.RefResource = append(fusionAppInstance.Spec.RefResource, fusionappv1alpha1.RefResource{
-					Kind: string(resource.Spec.ResourceKind),
-					Name: resource.Name,
-					Namespace: resource.Namespace,
-					UID: string(resource.UID),
-					AliasName: resource.Spec.AliasName,
-					Icon: resource.Spec.Icon,
-					Description: resource.Spec.Description,
-				})
 			}
 		}
 	}

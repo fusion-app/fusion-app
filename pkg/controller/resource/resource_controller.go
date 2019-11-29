@@ -8,6 +8,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"os"
@@ -107,6 +108,19 @@ func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Resu
 	log.Printf("Reconciling Resource %s", instance.Name)
 	// if the resource is terminating, stop reconcile
 	if instance.ObjectMeta.DeletionTimestamp != nil {
+		if instance.Spec.RefResourceClaim != nil {
+			for _, item := range instance.Spec.RefResourceClaim {
+				err := r.client.Delete(context.TODO(), &fusionappv1alpha1.ResourceClaim{
+					ObjectMeta: v1.ObjectMeta{
+						Name: item.Name,
+						Namespace: item.Namespace,
+					},
+				})
+				if err != nil && !errors.IsNotFound(err) {
+					return reconcile.Result{}, err
+				}
+			}
+		}
 		return reconcile.Result{}, nil
 	}
 	probeEnabled := os.Getenv("RESOURCE_PROBE_ENABLED")

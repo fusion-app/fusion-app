@@ -72,3 +72,23 @@ func newDeployForProbe(appInstance *v1alpha1.FusionAppInstance) *appsv1.Deployme
 		},
 	}
 }
+
+func newResourceClaim(appInstance *v1alpha1.FusionAppInstance, resourceClaim *v1alpha1.ResourceClaimSpec) v1alpha1.ResourceClaim {
+	return v1alpha1.ResourceClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: appInstance.Name + "-" + resourceClaim.Name,
+			Namespace: appInstance.Namespace,
+		},
+		Spec:       v1alpha1.ResourceClaimSpec{
+			Name:           resourceClaim.Name,
+			AccessMode:     resourceClaim.AccessMode,
+			Selector:       resourceClaim.Selector,
+			RefAppInstance: v1alpha1.RefAppInstance{
+				UID:       string(appInstance.UID),
+				Name:      appInstance.Name,
+				Namespace: appInstance.Namespace,
+			},
+		},
+		Status:     v1alpha1.ResourceClaimStatus{Bound:false},
+	}
+}

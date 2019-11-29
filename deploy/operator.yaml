@@ -17,7 +17,7 @@ spec:
       containers:
         - name: fusion-app
           # Replace this with the built image name
-          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-operator:201911281401
+          image: registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-operator:201911292126-devel
           command:
           - /usr/local/bin/fusionapp-operator
           imagePullPolicy: Always

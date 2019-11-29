@@ -81,7 +81,7 @@ func (r *ReconcileResourceClaim) Reconcile(request reconcile.Request) (reconcile
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
-	// if the resource is terminating, ubound resources and stop reconcile
+	// if the resourceClaim is terminating, ubound resources and appInstance and stop reconcile
 	log.Printf("Reconciling resourceClaim %s", resourceClaim.Name)
 	if resourceClaim.ObjectMeta.DeletionTimestamp != nil {
 		rs := &fusionappv1alpha1.Resource{}
@@ -124,6 +124,13 @@ func (r *ReconcileResourceClaim) Reconcile(request reconcile.Request) (reconcile
 				}
 			}
 			appi.Spec.RefResourceClaim = refResourceClaim
+			var refResource []fusionappv1alpha1.RefResource
+			for _, item := range appi.Spec.RefResource {
+				if item.Name != rs.Name || item.Namespace!= rs.Namespace {
+					refResource = append(refResource, item)
+				}
+			}
+			appi.Spec.RefResource = refResource
 			err := r.client.Update(context.TODO(), appi)
 			if err != nil && !errors.IsNotFound(err) {
 				return reconcile.Result{}, err
