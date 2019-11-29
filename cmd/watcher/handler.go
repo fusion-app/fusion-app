@@ -40,6 +40,9 @@ func watchResourcesHandler(manager *golongpoll.LongpollManager, clientset *fusio
 						handled = false
 					default:
 						rs, modified := types.V1alpha1ResourceToResource(resource)
+						if len(rs.Phase) == 0 {
+							rs.Phase = v1alpha1.ProbePhaseNotReady
+						}
 						data, _ := json.Marshal(&ResourceMessage{Type: event.Type, Resource: *rs})
 						if originalCount <= 0 {
 							_ = manager.Publish("resources", string(data))

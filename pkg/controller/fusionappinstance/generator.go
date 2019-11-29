@@ -10,13 +10,15 @@ import (
 )
 
 const (
-	defaultProbeImage      = "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:instance-prober.201911291358"
+	defaultProbeImage      = "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:instance-prober.201911292308"
 
 	topic                  = "resource-event-source"
 
 	defaultMqAddress       = "221.228.66.83:30595"    // "114.212.87.225:32015"
 
 	EnvMqAdress            = "MQ_ADRESS"
+
+	envProbeImage          = "APPINSTANCE_PROBE_IMAGE"
 
 	EnvAppInstanceHttpURL  = "APPINSTANCE_HTTP_URL"
 
@@ -26,6 +28,9 @@ const (
 // newDeployForProbe returns a probe deployment with the same name/namespace as the cr
 func newDeployForProbe(appInstance *v1alpha1.FusionAppInstance) *appsv1.Deployment {
 	probeImage := defaultProbeImage
+	if len(os.Getenv(envProbeImage)) > 0 {
+		probeImage = os.Getenv(envProbeImage)
+	}
 	if len(appInstance.Spec.ProbeImage) > 0 {
 		probeImage = appInstance.Spec.ProbeImage
 	}

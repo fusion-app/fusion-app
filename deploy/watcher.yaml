@@ -29,8 +29,8 @@ spec:
               protocol: TCP
           resources:
             limits:
-              cpu: 1000m
-              memory: 1Gi
+              cpu: 4000m
+              memory: 2Gi
           env:
             - name: POD_NAME
               valueFrom:
