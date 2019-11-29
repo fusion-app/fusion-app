@@ -57,6 +57,7 @@ type Action struct {
 	ActionID    string      `json:"actionID"`
 	ActionName  string      `json:"actionName"`
 	RefResource RefResource `json:"refResource,omitempty"`
+	UpdateTime  string      `json:"update_time"`
 	State       ActionState `json:"state"`
 }
 
