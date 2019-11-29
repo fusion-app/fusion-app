@@ -85,7 +85,8 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 		} else {
 			for _, resource := range rsl.Items {
 				if (len(resourceAPIQueryBody.Kind) == 0 || string(resource.Spec.ResourceKind) == resourceAPIQueryBody.Kind) &&
-					(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) {
+					(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) &&
+					(len(resourceAPIQueryBody.Bound) == 0 || (resource.Status.Bound == true && resourceAPIQueryBody.Bound == "true") || (resource.Status.Bound == false && resourceAPIQueryBody.Bound == "false")){
 					rs, modified := types.V1alpha1ResourceToResource(&resource)
 					resources = append(resources, *rs)
 					if modified {

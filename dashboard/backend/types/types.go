@@ -70,6 +70,7 @@ type ResourceAPIPutBody struct {
 type ResourceAPIQueryBody struct {
 	Kind       string   `json:"kind,omitempty"`
 	Phase      string   `json:"phase,omitempty"`
+	Bound      string   `json:"bound,omitempty"`
 	RefResource fusionappv1alpha1.RefResource `json:"refResource,omitempty"`
 	LabelSelector []fusionappv1alpha1.SelectorSpec `json:"labelSelector,omitempty"`
 }
