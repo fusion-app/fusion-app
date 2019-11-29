@@ -20,6 +20,7 @@ type FusionAppInstanceSpec struct {
 	ProbeArgs    []string          `json:"probeArgs,omitempty"`
 	ProbeEnabled bool              `json:"probeEnabled"`
 	AliasName    string            `json:"aliasName,omitempty"`
+	RefResourceClaim []RefResourceClaim `json:"refResourceClaim,omitempty"`
 }
 
 type RefApp struct {
@@ -63,6 +64,12 @@ type Action struct {
 type ActionState string
 
 type FusionAppInstancePhase string
+
+const (
+	FusionAppInstancePhaseNotReady FusionAppInstancePhase = "NotReady"
+	FusionAppInstancePhaseReady FusionAppInstancePhase = "Ready"
+)
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // FusionAppInstance is the Schema for the fusionappinstances API

@@ -63,16 +63,14 @@ type ReconcileResourceClaim struct {
 
 // Reconcile reads that state of the cluster for a ResourceClaim object and makes changes based on the state read
 // and what is in the ResourceClaim.Spec
-// TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
-// a Pod as an example
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileResourceClaim) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 
-	// Fetch the ResourceClaim instance
-	instance := &fusionappv1alpha1.ResourceClaim{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
+	// Fetch the ResourceClaim resourceClaim
+	resourceClaim := &fusionappv1alpha1.ResourceClaim{}
+	err := r.client.Get(context.TODO(), request.NamespacedName, resourceClaim)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -81,6 +79,70 @@ func (r *ReconcileResourceClaim) Reconcile(request reconcile.Request) (reconcile
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
+		return reconcile.Result{}, err
+	}
+	// if the resource is terminating, ubound resources and stop reconcile
+	log.Printf("Reconciling resourceClaim %s", resourceClaim.Name)
+	if resourceClaim.ObjectMeta.DeletionTimestamp != nil {
+		rs := &fusionappv1alpha1.Resource{}
+		err := r.client.Get(context.TODO(), client.ObjectKey{
+			Name: resourceClaim.Spec.RefResource.Name,
+			Namespace: resourceClaim.Spec.RefResource.Namespace,
+		}, rs)
+		if err != nil && !errors.IsNotFound(err) {
+			return reconcile.Result{}, err
+		}
+		if err == nil {
+			var refResourceClaim []fusionappv1alpha1.RefResourceClaim
+			for _, item := range rs.Spec.RefResourceClaim {
+				if item.Name != resourceClaim.Name || item.Namespace!= resourceClaim.Namespace {
+					refResourceClaim = append(refResourceClaim, item)
+				}
+			}
+			if len(refResourceClaim) == 0 {
+				rs.Status.Bound = false
+			}
+			rs.Spec.RefResourceClaim = refResourceClaim
+			err := r.client.Update(context.TODO(), rs)
+			if err != nil && !errors.IsNotFound(err) {
+				return reconcile.Result{}, err
+			}
+		}
+		appi := &fusionappv1alpha1.FusionAppInstance{}
+		err = r.client.Get(context.TODO(), client.ObjectKey{
+			Name: resourceClaim.Spec.RefAppInstance.Name,
+			Namespace: resourceClaim.Spec.RefAppInstance.Namespace,
+		}, appi)
+		if err != nil && !errors.IsNotFound(err) {
+			return reconcile.Result{}, err
+		}
+		if err == nil {
+			var refResourceClaim []fusionappv1alpha1.RefResourceClaim
+			for _, item := range appi.Spec.RefResourceClaim {
+				if item.Name != resourceClaim.Name || item.Namespace!= resourceClaim.Namespace {
+					refResourceClaim = append(refResourceClaim, item)
+				}
+			}
+			appi.Spec.RefResourceClaim = refResourceClaim
+			err := r.client.Update(context.TODO(), appi)
+			if err != nil && !errors.IsNotFound(err) {
+				return reconcile.Result{}, err
+			}
+		}
+		return reconcile.Result{}, nil
+	}
+	if resourceClaim.Status.Bound {
+		return reconcile.Result{}, nil
+	}
+	appInstance := new(fusionappv1alpha1.FusionAppInstance)
+	err = r.client.Get(context.TODO(), client.ObjectKey{
+		Name: resourceClaim.Spec.RefAppInstance.Name,
+		Namespace: resourceClaim.Spec.RefAppInstance.Namespace,
+	}, appInstance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return reconcile.Result{}, nil
+		}
 		return reconcile.Result{}, err
 	}
 	rsl := &fusionappv1alpha1.ResourceList{}
@@ -99,7 +161,7 @@ func (r *ReconcileResourceClaim) Reconcile(request reconcile.Request) (reconcile
 		return reconcile.Result{}, fmt.Errorf("no resources available currently")
 	}
 	mp := make(labels.Set)
-	for _, selector := range instance.Spec.Selector {
+	for _, selector := range resourceClaim.Spec.Selector {
 		mp[selector.Key] = selector.Value
 	}
 	labelSelector := labels.SelectorFromSet(mp)
@@ -113,13 +175,31 @@ func (r *ReconcileResourceClaim) Reconcile(request reconcile.Request) (reconcile
 	if resource == nil {
 		return reconcile.Result{}, fmt.Errorf("no suitable resources available currently")
 	}
-	if resource.Status.Bound == false {
-		resource.Status.Bound = true
-		err = r.client.Update(context.TODO(), resource)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
+	resource.Spec.RefResourceClaim = append(resource.Spec.RefResourceClaim, fusionappv1alpha1.RefResourceClaim{
+		UID:       string(resourceClaim.UID),
+		Name:      resourceClaim.Name,
+		Namespace: resourceClaim.Namespace,
+	})
+	resource.Status.Bound = true
+	err = r.client.Update(context.TODO(), resource)
+	if err != nil {
+		return reconcile.Result{}, err
 	}
+	resourceClaim.Spec.RefResource = fusionappv1alpha1.RefResource {
+		Name: resource.Name,
+		Namespace: resource.Namespace,
+		Kind: string(resource.Spec.ResourceKind),
+		UID: string(resource.UID),
+	}
+	resourceClaim.Status.Bound = true
+	appInstance.Spec.RefResource = append(appInstance.Spec.RefResource, fusionappv1alpha1.RefResource{
+		Name: resource.Name,
+		Namespace: resource.Namespace,
+		Kind: string(resource.Spec.ResourceKind),
+		UID: string(resource.UID),
+	})
+	_ = r.client.Update(context.TODO(), resourceClaim)
+	_ = r.client.Update(context.TODO(), appInstance)
 	return reconcile.Result{}, nil
 }
 

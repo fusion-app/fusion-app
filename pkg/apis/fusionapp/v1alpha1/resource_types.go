@@ -23,7 +23,14 @@ type ResourceSpec struct {
 	ProbeArgs    []string              `json:"probeArgs"`
 	ProbeEnabled bool                  `json:"probeEnabled"`
 	AliasName    string                `json:"aliasName,omitempty"`
+	RefResourceClaim []RefResourceClaim `json:"refResourceClaim,omitempty"`
 }
+
+type RefResourceClaim struct {
+	UID          string                `json:"uid"`
+	Name         string                `json:"name"`
+	Namespace    string                `json:"namespace"`
+} 
 
 type ResourceOperationSpec struct {
 	Name        string         `json:"name"`
