@@ -13,16 +13,39 @@ type ResourceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	Labels       map[string]string     `json:"labels"`
-	ResourceKind ResourceKind          `json:"resourceKind"`
-	Icon         string                `json:"icon,omitempty"`
-	Description  map[string]string     `json:"description,omitempty"`
-	AccessMode   ResourceAccessMode    `json:"accessMode"`
+	Labels       map[string]string       `json:"labels"`
+	ResourceKind ResourceKind            `json:"resourceKind"`
+	Icon         string                  `json:"icon,omitempty"`
+	Description  map[string]string       `json:"description,omitempty"`
+	AccessMode   ResourceAccessMode      `json:"accessMode"`
 	Operation    []ResourceOperationSpec `json:"operation,omitempty"`
-	ProbeImage   string                `json:"probeImage,omitempty"`
-	ProbeArgs    []string              `json:"probeArgs"`
-	ProbeEnabled bool                  `json:"probeEnabled"`
-	AliasName    string                `json:"aliasName,omitempty"`
+	ProbeImage   string                  `json:"probeImage,omitempty"`
+	ProbeArgs    []string                `json:"probeArgs"`
+	ProbeEnabled bool                    `json:"probeEnabled"`
+	AliasName    string                  `json:"aliasName,omitempty"`
+}
+
+type ProbeSpec struct {
+	Enabled  bool           `json:"enabled"`
+	Image    string         `json:"image"`
+	Args     []string       `json:"args"`
+	Patchers []FieldPatcher `json:"patchers"`
+}
+
+type FieldPatcher struct {
+	Source  HTTPActionSpec `json:"source"`
+	Setters []FieldSetter  `json:"setters"`
+}
+
+type FieldSetter struct {
+	Parser string         `json:"parser"`
+	Target HTTPActionSpec `json:"target"`
+}
+
+type ConnectorSpec struct {
+	Image      string   `json:"image"`
+	Args       []string `json:"args"`
+	ListenPort int32    `json:"listenPort"`
 }
 
 type ResourceOperationSpec struct {
@@ -33,10 +56,10 @@ type ResourceOperationSpec struct {
 }
 
 type HTTPActionSpec struct {
-	Action  string            `json:"action"`
-	URL     string            `json:"url"`
-	Query   map[string]string `json:"query"`
-	Headers map[string]string `json:"headers"`
+	Action      string            `json:"action"`
+	URL         string            `json:"url"`
+	ValidateTLS bool              `json:"validateTLS,omitempty"`
+	Headers     map[string]string `json:"headers,omitempty"`
 }
 
 type ResourceKind string
@@ -59,13 +82,13 @@ type ResourcePhase string
 
 const (
 	// ResourcePhasePending means Resource not ready
-	ResourcePhasePending   = "Pending"
+	ResourcePhasePending = "Pending"
 
 	// ResourcePhaseSynchronous means Resource is ready
-	ResourcePhaseRunning   = "Running"
+	ResourcePhaseRunning = "Running"
 
 	// ResourcePhaseFailed means some pods of Resource have failed.
-	ResourcePhaseFailed    = "Failed"
+	ResourcePhaseFailed = "Failed"
 )
 
 // ResourcePhase defines all phase of dataset lifecycle.
@@ -73,16 +96,16 @@ type ProbePhase string
 
 const (
 	// ProbePhaseNotReady means probe not ready
-	ProbePhaseNotReady       = "NotReady"
+	ProbePhaseNotReady = "NotReady"
 
 	// ProbePhasePending means probe pod not started
-	ProbePhasePending        = "Pending"
+	ProbePhasePending = "Pending"
 
 	// ProbePhaseSynchronous means probe is ready
-	ProbePhaseSynchronous    = "Synchronous"
+	ProbePhaseSynchronous = "Synchronous"
 
 	// ProbePhaseFailed means the probe pod has failed.
-	ProbePhaseFailed         = "Failed"
+	ProbePhaseFailed = "Failed"
 )
 
 // ResourceStatus defines the observed state of Resource
