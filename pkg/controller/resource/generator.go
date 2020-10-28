@@ -56,6 +56,10 @@ func newConfigmapForPatcher(resource *fusionappv1alpha1.Resource) *corev1.Config
 func newDeployForProbeAndMS(resource *fusionappv1alpha1.Resource) *appsv1.Deployment {
 	MSImage := defaultMSImage
 	probeImage := defaultProbeImage
+	port := defaultMSPort
+	if resource.Spec.ConnectorSpec.ListenPort != 0 {
+		port = resource.Spec.ConnectorSpec.ListenPort
+	}
 	if len(os.Getenv(envProbeImage)) > 0 {
 		probeImage = os.Getenv(envProbeImage)
 	}
@@ -122,7 +126,7 @@ func newDeployForProbeAndMS(resource *fusionappv1alpha1.Resource) *appsv1.Deploy
 							Ports: []corev1.ContainerPort{
 								{
 									Name: defaultMSPortName,
-									ContainerPort: defaultMSPort,
+									ContainerPort: port,
 								},
 							},
 						},
@@ -152,6 +156,10 @@ func newDeployForProbeAndMS(resource *fusionappv1alpha1.Resource) *appsv1.Deploy
 }
 
 func newServiceForMS(resource *fusionappv1alpha1.Resource) *corev1.Service {
+	port := defaultMSPort
+	if resource.Spec.ConnectorSpec.ListenPort != 0 {
+		port = resource.Spec.ConnectorSpec.ListenPort
+	}
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resource.Name + "ms-svc",
@@ -164,7 +172,7 @@ func newServiceForMS(resource *fusionappv1alpha1.Resource) *corev1.Service {
 			Ports: []corev1.ServicePort{
 				{
 					Name: defaultMSPortName,
-					Port: defaultMSPort,
+					Port: port,
 				},
 			},
 		},
@@ -181,6 +189,10 @@ func GatewayMappingGVK() schema.GroupVersionKind {
 }
 
 func (r *ReconcileResource) newGatewayMappingForService(resource *fusionappv1alpha1.Resource) (*unstructured.Unstructured, error) {
+	port := defaultMSPort
+	if resource.Spec.ConnectorSpec.ListenPort != 0 {
+		port = resource.Spec.ConnectorSpec.ListenPort
+	}
 	mapping := &unstructured.Unstructured{}
 	mapping.Object = map[string]interface{}{
 		"metadata": map[string]interface{}{
@@ -190,7 +202,7 @@ func (r *ReconcileResource) newGatewayMappingForService(resource *fusionappv1alp
 		},
 		"spec": map[string]interface{}{
 			"prefix":        "/" + resource.Name + "/",
-			"service":       fmt.Sprintf("%s.%s.svc.cluster.local:%d", resource.Name + "ms-svc", resource.Namespace, defaultMSPort),
+			"service":       fmt.Sprintf("%s.%s.svc.cluster.local:%d", resource.Name + "ms-svc", resource.Namespace, port),
 		},
 	}
 	mapping.SetGroupVersionKind(GatewayMappingGVK())
