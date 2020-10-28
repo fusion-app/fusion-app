@@ -41,8 +41,8 @@ spec:
             - name: RESOURCE_PROBE_ENABLED
               value: "false"
             - name: APPINSTANCE_PROBE_ENABLED
-              value: "false"
+              value: "true"
             - name: APPINSTANCE_PROBE_IMAGE
-              value: "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:instance-prober.201911292308"
+              value: "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:instance-prober.201911300110"
             - name: APPINSTANCE_HTTP_URL
               value: "https://app-engine.2018yfb1004800.cn:30081/get_app_instance_action_state_and_resource_by_uid"

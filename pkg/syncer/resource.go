@@ -67,3 +67,23 @@ func NewServiceSyncer(name string, owner, obj runtime.Object, c client.Client, s
 		return nil
 	})
 }
+
+func NewConfigmapSyncer(name string, owner, obj runtime.Object, c client.Client, scheme *runtime.Scheme) Interface {
+	template := obj.(*v1.ConfigMap)
+	metaobj := &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      template.ObjectMeta.Name,
+			Namespace: template.ObjectMeta.Namespace,
+		},
+	}
+	return NewObjectSyncer(name, owner, metaobj, c, scheme, func(existing runtime.Object) error {
+		out := existing.(*v1.ConfigMap)
+		out.Data = make(map[string]string)
+		if len(template.Data) > 0 {
+			for k, v := range template.Data {
+				out.Data[k] = v
+			}
+		}
+		return nil
+	})
+}

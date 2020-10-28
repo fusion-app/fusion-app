@@ -2,12 +2,15 @@ package resource
 
 import (
 	"context"
+	"fmt"
 	fusionappv1alpha1 "github.com/fusion-app/fusion-app/pkg/apis/fusionapp/v1alpha1"
 	"github.com/fusion-app/fusion-app/pkg/syncer"
+	"github.com/fusion-app/fusion-app/pkg/util"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"os"
@@ -17,6 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"time"
 )
 
 const controllerName = "resource-controller"
@@ -51,9 +55,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
+	mapping := &unstructured.Unstructured{}
+	mapping.SetGroupVersionKind(GatewayMappingGVK())
 	subResources := []runtime.Object{
 		&corev1.Pod{},
 		&appsv1.Deployment{},
+		mapping,
 	}
 
 	// Watch for changes to secondary resource Pods and requeue the owner Resource
@@ -111,8 +118,10 @@ func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Resu
 	}
 	probeEnabled := os.Getenv("RESOURCE_PROBE_ENABLED")
 	syncers := []syncer.Interface{}
-	if instance.Spec.ProbeEnabled || probeEnabled == "true"{
-		syncers = append(syncers, NewProbeDeploySyncer(instance, r.client, r.scheme))
+	if instance.Spec.ProbeSpec.Enabled || probeEnabled == "true"{
+		syncers = append(syncers, NewPatcherConfigmapSyncer(instance, r.client, r.scheme))
+		syncers = append(syncers, NewProbeAndMSDeploySyncer(instance, r.client, r.scheme))
+		syncers = append(syncers, NewMSServiceSyncer(instance, r.client, r.scheme))
 	} else {
 		deploy := &appsv1.Deployment{}
 		err := r.client.Get(context.TODO(), client.ObjectKey{Name: instance.Name + "-probe-deploy", Namespace: instance.Namespace}, deploy)
@@ -124,6 +133,19 @@ func (r *ReconcileResource) Reconcile(request reconcile.Request) (reconcile.Resu
 	}
 	if err := r.sync(syncers); err != nil {
 		return reconcile.Result{}, err
+	}
+	if instance.Spec.ProbeSpec.Enabled || probeEnabled == "true"{
+		mapping, err := r.newGatewayMappingForService(instance)
+		if err != nil {
+			return reconcile.Result{}, fmt.Errorf("generate Mapping spec error: %v", err)
+		}
+		// Create Mapping if not found
+		if err := util.CreateIfNotExistsMapping(r.client, mapping); err != nil {
+			return reconcile.Result{
+				Requeue:      true,
+				RequeueAfter: time.Second * 30,
+			}, err
+		}
 	}
 	return reconcile.Result{}, r.updateStatus(instance)
 }

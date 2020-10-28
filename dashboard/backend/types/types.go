@@ -29,6 +29,7 @@ type Resource struct {
 	ProbeArgs    []string     `json:"probeArgs"`
 	ProbeImage   string       `json:"probeImage"`
 	Position      Position     `json:"position,omitempty"`
+	Gateway       string       `json:"gateway"`
 }
 
 type Position struct {

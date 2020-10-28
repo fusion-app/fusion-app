@@ -1,5 +1,7 @@
 module github.com/fusion-app/fusion-app
 
+go 1.15
+
 require (
 	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/Shopify/sarama v1.19.0

@@ -13,16 +13,15 @@ type ResourceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	Labels       map[string]string       `json:"labels"`
-	ResourceKind ResourceKind            `json:"resourceKind"`
-	Icon         string                  `json:"icon,omitempty"`
-	Description  map[string]string       `json:"description,omitempty"`
-	AccessMode   ResourceAccessMode      `json:"accessMode"`
-	Operation    []ResourceOperationSpec `json:"operation,omitempty"`
-	ProbeImage   string                  `json:"probeImage,omitempty"`
-	ProbeArgs    []string                `json:"probeArgs"`
-	ProbeEnabled bool                    `json:"probeEnabled"`
-	AliasName    string                  `json:"aliasName,omitempty"`
+	Labels        map[string]string       `json:"labels"`
+	ResourceKind  ResourceKind            `json:"resourceKind"`
+	Icon          string                  `json:"icon,omitempty"`
+	Description   map[string]string       `json:"description,omitempty"`
+	AccessMode    ResourceAccessMode      `json:"accessMode"`
+	Operation     []ResourceOperationSpec `json:"operation,omitempty"`
+	AliasName     string                  `json:"aliasName,omitempty"`
+	ProbeSpec     ProbeSpec				  `json:"probeSpec"`
+	ConnectorSpec ConnectorSpec           `json:"connectorSpec"`
 }
 
 type ProbeSpec struct {
@@ -32,6 +31,10 @@ type ProbeSpec struct {
 	Patchers []FieldPatcher `json:"patchers"`
 }
 
+type PatcherConfig struct {
+	Patchers []FieldPatcher `json:"patchers"`	
+}
+
 type FieldPatcher struct {
 	Source  HTTPActionSpec `json:"source"`
 	Setters []FieldSetter  `json:"setters"`
@@ -39,6 +42,7 @@ type FieldPatcher struct {
 
 type FieldSetter struct {
 	Parser string         `json:"parser"`
+	Type   string         `json:"type"`
 	Target HTTPActionSpec `json:"target"`
 }
 

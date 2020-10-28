@@ -7,11 +7,20 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewProbeDeploySyncer(resource *v1alpha1.Resource, c client.Client, scheme *runtime.Scheme) syncer.Interface {
-	template := newDeployForProbe(resource)
-	return syncer.NewDeploySyncer("prob-deploy", resource, template, c, scheme)
+func NewProbeAndMSDeploySyncer(resource *v1alpha1.Resource, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	template := newDeployForProbeAndMS(resource)
+	return syncer.NewDeploySyncer("probe-deploy", resource, template, c, scheme)
 }
 
+func NewMSServiceSyncer(resource *v1alpha1.Resource, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	template := newServiceForMS(resource)
+	return syncer.NewServiceSyncer("ms-svc", resource, template, c, scheme)
+}
+
+func NewPatcherConfigmapSyncer(resource *v1alpha1.Resource, c client.Client, scheme *runtime.Scheme) syncer.Interface {
+	template := newConfigmapForPatcher(resource)
+	return syncer.NewConfigmapSyncer("patcher-cm", resource, template, c, scheme)
+}
 //func NewConsumerPodSyncer(resource *v1alpha1.Resource, c client.Client, scheme *runtime.Scheme) syncer.Interface {
 //	pod := newPodForConsumer(resource)
 //	return syncer.NewObjectSyncer("consumer-pod", resource, pod, c, scheme, func(existing runtime.Object) error {

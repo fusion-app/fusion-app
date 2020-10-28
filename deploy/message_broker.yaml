@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: message-broker
+  namespace: fusion-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: message-broker
+  template:
+    metadata:
+      labels:
+        name: message-broker
+    spec:
+      containers:
+        - name: message-broker
+          image: registry.cn-hangzhou.aliyuncs.com/tangcong/messagebroker:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8082
+              name: http
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi

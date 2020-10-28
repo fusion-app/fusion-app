@@ -43,3 +43,5 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "fusion-app"
+            - name: GATEWAY
+              value: "http://114.212.87.5:30810"

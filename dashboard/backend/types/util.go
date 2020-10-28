@@ -11,7 +11,7 @@ func V1alpha1ResourceToResource(rs *v1alpha1.Resource) (*Resource, bool) {
 	resource.UID = string(rs.UID)
 	resource.Namespace = rs.Namespace
 	resource.Kind = string(rs.Spec.ResourceKind)
-	resource.ProbeEnabled = rs.Spec.ProbeEnabled
+	resource.ProbeEnabled = rs.Spec.ProbeSpec.Enabled
 	resource.Phase = string(rs.Status.ProbePhase)
 	resource.Bound = rs.Status.Bound
 	resource.Name = rs.Name
@@ -31,8 +31,8 @@ func V1alpha1ResourceToResource(rs *v1alpha1.Resource) (*Resource, bool) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if rs.Spec.ProbeArgs != nil {
-		in, out := &rs.Spec.ProbeArgs, &resource.ProbeArgs
+	if rs.Spec.ProbeSpec.Args != nil {
+		in, out := &rs.Spec.ProbeSpec.Args, &resource.ProbeArgs
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
@@ -84,10 +84,10 @@ func ResourceToV1alpha1Resource(resource *Resource) *v1alpha1.Resource {
 	rs.Namespace = resource.Namespace
 	rs.Name = resource.Name
 	rs.Spec.ResourceKind = v1alpha1.ResourceKind(resource.Kind)
-	rs.Spec.ProbeEnabled = resource.ProbeEnabled
+	rs.Spec.ProbeSpec.Enabled = resource.ProbeEnabled
 	rs.Status.Bound = resource.Bound
 	rs.Spec.AccessMode = v1alpha1.ResourceAccessMode(resource.AccessMode)
-	rs.Spec.ProbeImage = resource.ProbeImage
+	rs.Spec.ProbeSpec.Image = resource.ProbeImage
 	rs.Spec.AliasName = resource.AliasName
 	if resource.Labels != nil {
 		in, out := &resource.Labels, &rs.Spec.Labels
@@ -104,7 +104,7 @@ func ResourceToV1alpha1Resource(resource *Resource) *v1alpha1.Resource {
 		}
 	}
 	if resource.ProbeArgs != nil {
-		in, out := &resource.ProbeArgs, &rs.Spec.ProbeArgs
+		in, out := &resource.ProbeArgs, &rs.Spec.ProbeSpec.Args
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
@@ -129,7 +129,7 @@ func UpdateResourceWithResourceSpec(resource *v1alpha1.Resource, spec *ResourceS
 		}
 	}
 	if spec.ProbeArgs != nil {
-		in, out := &spec.ProbeArgs, &resource.Spec.ProbeArgs
+		in, out := &spec.ProbeArgs, &resource.Spec.ProbeSpec.Args
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
@@ -147,7 +147,7 @@ func UpdateResourceWithResourceSpec(resource *v1alpha1.Resource, spec *ResourceS
 		resource.Spec.Icon = spec.Icon
 	}
 	if len(spec.ProbeImage) > 0 {
-		resource.Spec.ProbeImage = spec.ProbeImage
+		resource.Spec.ProbeSpec.Image = spec.ProbeImage
 	}
 	if len(spec.AccessMode) > 0 {
 		resource.Spec.AccessMode = spec.AccessMode
@@ -159,7 +159,7 @@ func UpdateResourceWithResourceSpec(resource *v1alpha1.Resource, spec *ResourceS
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	resource.Spec.ProbeEnabled = spec.ProbeEnabled
+	resource.Spec.ProbeSpec.Enabled = spec.ProbeEnabled
 }
 
 func V1alpha1AppToApp(fusionApp *v1alpha1.FusionApp) *App {

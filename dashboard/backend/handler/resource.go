@@ -13,11 +13,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"net/http"
+	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.Request) {
 	resourceAPIQueryBody := new(types.ResourceAPIQueryBody)
+	gatewayUrl := os.Getenv("GATEWAY")
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	defer r.Body.Close()
 	if err != nil {
@@ -52,6 +54,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 			return
 		}
 		rs, modified := types.V1alpha1ResourceToResource(resource)
+		rs.Gateway = gatewayUrl + resource.Name
 		resources := []types.Resource{*rs}
 		responseJSON(resources, w, http.StatusOK)
 		if modified {
@@ -76,6 +79,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 			for _, item := range rsl.Items {
 				if labelSelector.Matches(labels.Set(item.Spec.Labels)) {
 					rs, modified := types.V1alpha1ResourceToResource(&item)
+					rs.Gateway = gatewayUrl + item.Name
 					resources = append(resources, *rs)
 					if modified {
 						rss = append(rss, item)
@@ -88,6 +92,7 @@ func (handler *APIHandler) ListResourcesWithKind(w http.ResponseWriter, r *http.
 					(len(resourceAPIQueryBody.Phase) == 0 || string(resource.Status.ProbePhase) == resourceAPIQueryBody.Phase) &&
 					(len(resourceAPIQueryBody.Bound) == 0 || (resource.Status.Bound == true && resourceAPIQueryBody.Bound == "true") || (resource.Status.Bound == false && resourceAPIQueryBody.Bound == "false")){
 					rs, modified := types.V1alpha1ResourceToResource(&resource)
+					rs.Gateway = gatewayUrl + resource.Name
 					resources = append(resources, *rs)
 					if modified {
 						rss = append(rss, resource)
