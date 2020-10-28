@@ -17,13 +17,13 @@ import (
 const (
 	defaultProbeImage      = "registry.cn-shanghai.aliyuncs.com/fusion-app/http-prober:resource-prober.202010271442"
 
-	defaultMSImage         = "registry.cn-hangzhou.aliyuncs.com/tangcong/airpurifier_service:v1"
+	defaultMSImage         = "registry.cn-hangzhou.aliyuncs.com/tangcong/airpurifier_service:v2"
 
 	topic                  = "resource-event-source"
 
 	defaultMqAddress       = "221.228.66.83:30595"    // "114.212.87.225:32015"
 
-	defaultMQBrokerHost    = "message-broker.fusion-app:8082"
+	defaultMQBrokerHost    = "message-broker.fusion-app.svc.cluster.local:8082"
 
 	EnvMqAdress            = "MQ_ADRESS"
 
@@ -90,7 +90,7 @@ func newDeployForProbeAndMS(resource *fusionappv1alpha1.Resource) *appsv1.Deploy
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name:    resource.Name + "-probe",
+							Name:    "probe",
 							Image:   probeImage,
 							Args:    args,
 							Resources: corev1.ResourceRequirements{
@@ -107,7 +107,7 @@ func newDeployForProbeAndMS(resource *fusionappv1alpha1.Resource) *appsv1.Deploy
 							},
 						},
 						{
-							Name:    resource.Name + "-ms",
+							Name:    "connector",
 							Image:   MSImage,
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{

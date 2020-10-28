@@ -37,7 +37,7 @@ func (r *ReconcileResource) updateStatus(resource *v1alpha1.Resource) error {
 		resource.Status.ProbePhase = v1alpha1.ProbePhaseFailed
 	} else {
 		resource.Status.Phase = v1alpha1.ResourcePhasePending
-		if resource.Spec.ProbeEnabled {
+		if resource.Spec.ProbeSpec.Enabled {
 			resource.Status.ProbePhase = v1alpha1.ProbePhasePending
 		} else {
 			resource.Status.ProbePhase = v1alpha1.ProbePhaseNotReady

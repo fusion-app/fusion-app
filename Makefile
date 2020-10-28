@@ -1,7 +1,7 @@
-BACKEND_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-backend:201911291340
-OPERATOR_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-operator:201911291340
-CONSUMER_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-consumer:201911291340
-WATCHER_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-watcher:201911291340
+BACKEND_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-backend:202010281454
+OPERATOR_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-operator:202010281454
+CONSUMER_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-consumer:202010281454
+WATCHER_IMAGE=registry.cn-hangzhou.aliyuncs.com/njuicscn/fusion-app-watcher:202010281454
 
 backend:
 	docker build -t $(BACKEND_IMAGE) -f build/Dockerfile.backend .
@@ -18,5 +18,5 @@ watcher:
 push:
 	docker push $(BACKEND_IMAGE)
 	docker push $(OPERATOR_IMAGE)
-	docker push $(CONSUMER_IMAGE)
-	docker push $(WATCHER_IMAGE)
+#	docker push $(CONSUMER_IMAGE)
+#	docker push $(WATCHER_IMAGE)
