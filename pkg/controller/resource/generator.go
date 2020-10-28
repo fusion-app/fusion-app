@@ -19,13 +19,11 @@ const (
 
 	defaultMSImage         = "registry.cn-hangzhou.aliyuncs.com/tangcong/airpurifier_service:v2"
 
-	topic                  = "resource-event-source"
+	defaultMQBrokerHost    = "message-broker.fusion-app.svc.cluster.local"
 
-	defaultMqAddress       = "221.228.66.83:30595"    // "114.212.87.225:32015"
+	defaultSpringBootAdminHost = "spring-boot-admin-svc.fusion-app.svc.cluster.local:8000"
 
-	defaultMQBrokerHost    = "message-broker.fusion-app.svc.cluster.local:8082"
-
-	EnvMqAdress            = "MQ_ADRESS"
+	EnvSpringBootAdminHost = "SPRING_BOOT_ADMIN_HOST"
 
 	EnvMQBrokerHost        = "MQ_BROKER_HOST"
 
@@ -66,10 +64,6 @@ func newDeployForProbeAndMS(resource *fusionappv1alpha1.Resource) *appsv1.Deploy
 	}
 	if len(resource.Spec.ConnectorSpec.Image) > 0 {
 		MSImage = resource.Spec.ConnectorSpec.Image
-	}
-	mqAddress := os.Getenv(EnvMqAdress)
-	if len(mqAddress) == 0 {
-		mqAddress = defaultMqAddress
 	}
 	args := []string{"--crd-namespace",
 		resource.Namespace, "--crd-name", resource.Name, "--crd-kind", resource.Kind,
@@ -119,6 +113,10 @@ func newDeployForProbeAndMS(resource *fusionappv1alpha1.Resource) *appsv1.Deploy
 								{
 									Name: EnvMQBrokerHost,
 									Value: defaultMQBrokerHost,
+								},
+								{
+									Name: EnvSpringBootAdminHost,
+									Value: defaultSpringBootAdminHost,
 								},
 							},
 							Ports: []corev1.ContainerPort{
@@ -191,9 +189,8 @@ func (r *ReconcileResource) newGatewayMappingForService(resource *fusionappv1alp
 			"labels":    DefaultLabels(resource),
 		},
 		"spec": map[string]interface{}{
-			"prefix":        "/" + resource.Name,
+			"prefix":        "/" + resource.Name + "/",
 			"service":       fmt.Sprintf("%s.%s.svc.cluster.local:%d", resource.Name + "ms-svc", resource.Namespace, defaultMSPort),
-			"use_websocket": true,
 		},
 	}
 	mapping.SetGroupVersionKind(GatewayMappingGVK())

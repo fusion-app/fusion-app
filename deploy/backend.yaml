@@ -44,4 +44,4 @@ spec:
             - name: OPERATOR_NAME
               value: "fusion-app"
             - name: GATEWAY
-              value: "http://114.212.87.5:30810"
+              value: "http://114.212.87.5:30810/"

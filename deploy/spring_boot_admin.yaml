@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-boot-admin
+  namespace: fusion-app
+spec:
+  selector:
+    matchLabels:
+      app: spring-boot-admin
+  template:
+    metadata:
+      labels:
+        app: spring-boot-admin
+    spec:
+      containers:
+        - name: spring
+          image: registry.cn-hangzhou.aliyuncs.com/tangcong/springbootadmin:v1
+          ports:
+            - containerPort: 8000
+              name: http
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi

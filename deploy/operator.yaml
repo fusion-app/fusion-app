@@ -39,7 +39,7 @@ spec:
             - name: MQ_ADRESS
               value: "221.228.66.83:30595"
             - name: RESOURCE_PROBE_ENABLED
-              value: "false"
+              value: "true"
             - name: APPINSTANCE_PROBE_ENABLED
               value: "true"
             - name: APPINSTANCE_PROBE_IMAGE

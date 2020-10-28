@@ -6,7 +6,7 @@ metadata:
 spec:
   ports:
     - name: http
-      nodePort: 32022
+      nodePort: 30822
       port: 8080
       protocol: TCP
       targetPort: http
@@ -27,3 +27,18 @@ spec:
   selector:
     name: message-broker
   type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-boot-admin-svc
+  namespace: fusion-app
+spec:
+  ports:
+    - port: 8000
+      name: http
+      targetPort: http
+      nodePort: 32107
+  selector:
+    app: spring-boot-admin
+  type: NodePort

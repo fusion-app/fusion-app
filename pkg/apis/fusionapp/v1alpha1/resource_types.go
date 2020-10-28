@@ -27,7 +27,7 @@ type ResourceSpec struct {
 type ProbeSpec struct {
 	Enabled  bool           `json:"enabled"`
 	Image    string         `json:"image"`
-	Args     []string       `json:"args"`
+	Args     []string       `json:"args,omitempty"`
 	Patchers []FieldPatcher `json:"patchers"`
 }
 
@@ -48,8 +48,8 @@ type FieldSetter struct {
 
 type ConnectorSpec struct {
 	Image      string   `json:"image"`
-	Args       []string `json:"args"`
-	ListenPort int32    `json:"listenPort"`
+	Args       []string `json:"args,omitempty"`
+	ListenPort int32    `json:"listenPort,omitempty"`
 }
 
 type ResourceOperationSpec struct {
