@@ -28,7 +28,6 @@ type Resource struct {
 	Description  map[string]string       `json:"description,omitempty"`
 	ProbeArgs    []string     `json:"probeArgs"`
 	ProbeImage   string       `json:"probeImage"`
-	Position      Position     `json:"position,omitempty"`
 	Gateway       string       `json:"gateway"`
 }
 
