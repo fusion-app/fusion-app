@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -122,12 +123,34 @@ func newDeployForProbeAndMS(resource *fusionappv1alpha1.Resource) *appsv1.Deploy
 									Name: EnvSpringBootAdminHost,
 									Value: defaultSpringBootAdminHost,
 								},
+								{
+									Name: "SERVER_PORT",
+									Value: fmt.Sprintf("%d", port),
+								},
 							},
 							Ports: []corev1.ContainerPort{
 								{
 									Name: defaultMSPortName,
 									ContainerPort: port,
 								},
+							},
+							ReadinessProbe: &corev1.Probe{
+								Handler:             corev1.Handler{
+									TCPSocket: &corev1.TCPSocketAction{
+										Port: intstr.FromInt(int(port)),
+									},
+								},
+								InitialDelaySeconds: 5,
+								PeriodSeconds:       10,
+							},
+							LivenessProbe: &corev1.Probe{
+								Handler:             corev1.Handler{
+									TCPSocket: &corev1.TCPSocketAction{
+										Port: intstr.FromInt(int(port)),
+									},
+								},
+								InitialDelaySeconds: 15,
+								PeriodSeconds:       20,
 							},
 						},
 					},
