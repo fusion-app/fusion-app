@@ -29,11 +29,6 @@ func V1alpha1ResourceToResource(rs *v1alpha1.Resource) (*Resource, bool) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if rs.Spec.ProbeSpec.Args != nil {
-		in, out := &rs.Spec.ProbeSpec.Args, &resource.ProbeArgs
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
 	resource.Icon = rs.Spec.Icon
 	if rs.Spec.Description != nil {
 		in, out := &rs.Spec.Description, &resource.Description
@@ -42,6 +37,8 @@ func V1alpha1ResourceToResource(rs *v1alpha1.Resource) (*Resource, bool) {
 			(*out)[key] = val
 		}
 	}
+	resource.ConnectorSpec.Image = rs.Spec.ConnectorSpec.Image
+	resource.ConnectorSpec.ListenPort = rs.Spec.ConnectorSpec.ListenPort
 	if rs.Labels == nil {
 		rs.Labels = make(map[string]string)
 	}
@@ -56,7 +53,6 @@ func ResourceToV1alpha1Resource(resource *Resource) *v1alpha1.Resource {
 	rs.Spec.ProbeSpec.Enabled = resource.ProbeEnabled
 	rs.Status.Bound = resource.Bound
 	rs.Spec.AccessMode = v1alpha1.ResourceAccessMode(resource.AccessMode)
-	rs.Spec.ProbeSpec.Image = resource.ProbeImage
 	rs.Spec.AliasName = resource.AliasName
 	if resource.Labels != nil {
 		in, out := &resource.Labels, &rs.Spec.Labels
@@ -71,11 +67,6 @@ func ResourceToV1alpha1Resource(resource *Resource) *v1alpha1.Resource {
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
-	}
-	if resource.ProbeArgs != nil {
-		in, out := &resource.ProbeArgs, &rs.Spec.ProbeSpec.Args
-		*out = make([]string, len(*in))
-		copy(*out, *in)
 	}
 	rs.Spec.Icon = resource.Icon
 	if resource.Description != nil {

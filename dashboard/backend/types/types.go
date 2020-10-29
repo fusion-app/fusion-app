@@ -26,9 +26,13 @@ type Resource struct {
 	Operation    []fusionappv1alpha1.ResourceOperationSpec `json:"operation,omitempty"`
 	Icon         string       `json:"icon,omitempty"`
 	Description  map[string]string       `json:"description,omitempty"`
-	ProbeArgs    []string     `json:"probeArgs"`
-	ProbeImage   string       `json:"probeImage"`
+	ConnectorSpec ConnectorSpec `json:"connectorSpec"`
 	Gateway       string       `json:"gateway"`
+}
+
+type ConnectorSpec struct {
+	Image      string   `json:"image"`
+	ListenPort int32    `json:"listenPort,omitempty"`	
 }
 
 type Position struct {
