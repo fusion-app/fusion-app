@@ -127,6 +127,10 @@ func newDeployForProbeAndMS(resource *fusionappv1alpha1.Resource) *appsv1.Deploy
 									Name: "SERVER_PORT",
 									Value: fmt.Sprintf("%d", port),
 								},
+								{
+									Name: "RESOURCE_UID",
+									Value: string(resource.UID),
+								},
 							},
 							Ports: []corev1.ContainerPort{
 								{
