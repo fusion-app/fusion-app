@@ -91,6 +91,7 @@ func newDeployForProbeAndMS(resource *fusionappv1alpha1.Resource) *appsv1.Deploy
 						{
 							Name:    "probe",
 							Image:   probeImage,
+							ImagePullPolicy: corev1.PullAlways,
 							Args:    args,
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
@@ -108,6 +109,7 @@ func newDeployForProbeAndMS(resource *fusionappv1alpha1.Resource) *appsv1.Deploy
 						{
 							Name:    "connector",
 							Image:   MSImage,
+							ImagePullPolicy: corev1.PullAlways,
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
 									corev1.ResourceCPU: k8sresource.MustParse("500m"),
